@@ -1,0 +1,17 @@
+<project name="spiralcraft-facebook-test" basedir="." default="test">
+
+  <import file="../build.xml"/>
+  
+  <target name="test">
+ 
+    <devtask
+      codebase=".."
+      exec
+        ="class:/spiralcraft/task/TaskRunner
+          Test.assy
+         "
+    />
+  </target>
+
+                
+</project>

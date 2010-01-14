@@ -1,0 +1,11 @@
+
+<task:Debug
+  xmlns="class:/spiralcraft/data/types/standard/"
+  xmlns:task="class:/spiralcraft/task/"
+  xmlns:json="class:/spiralcraft/json/"
+  >
+  <messageX>[task:Debug].[*json:ToJson]
+  </messageX>
+ 
+
+</task:Debug>
