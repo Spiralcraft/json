@@ -1,11 +1,54 @@
-
-<task:Debug
-  xmlns="class:/spiralcraft/data/types/standard/"
+<test:TestGroup
   xmlns:task="class:/spiralcraft/task/"
+  xmlns:test="class:/spiralcraft/test/"
+  xmlns:j="class:/java/lang/"
+  xmlns:ju="class:/java/util/"
+  xmlns:lang="class:/spiralcraft/lang"
+  xmlns:fn="class:/spiralcraft/lang/functions/"
+  xmlns:util="class:/spiralcraft/util/"
+  xmlns:sutil="class:/spiralcraft/util/string/"
+  xmlns:vfs="class:/spiralcraft/vfs/"
   xmlns:json="class:/spiralcraft/json/"
+  xmlns="dynamic:/"
   >
-  <messageX>[task:Debug].[*json:ToJson]
-  </messageX>
+  <name>spiralcraft.lang.test
+  </name>
+  
+  <chain>
  
+    <task:Sequence>
+      <scenarios>
+    
+        <test:Assertion>
+        
+          <name>Simple serialization of a reflector
+          </name>
+          
+          <subjectX>[test:Assertion].[*json:ToJson]
+          </subjectX>
+          
+          <testX>.contains([test:Assertion].name)
+          </testX>
+          
+        </test:Assertion>
+        
+        <test:Assertion>
+        
+          <name>Escape test
+          </name>
+          
+          <subjectX>
+            "Using the formula: (W + I) * C where W = the constant of wood, which is well known to be 61, as agreed in many scientific circles. I = the variable in this equation, and stands for the word 'if' from the original problem. As there are three circumstances, with 0 equaling the chance that the woodchuck cannot chuck wood, 1 being the theory that the woodchuck can chuck wood but chooses not to, and 2 standing for the probability that the woodchuck can and will chuck wood, we clearly must choose 2 for use in this equation. C = the constant of Chuck Norris, whose presence in any problem involving the word chuck must there, is well known to equal 1.1 of any known being, therefore the final part of this calculation is 1.1. As is clear, this appears to give the answer of (61 + 2) * 1.1 = (63) * 1.1 = 69.3 units of wood."
+            .[*json:ToJson]
+          </subjectX>
+          
+          <testX>true
+          </testX>
+          
+        </test:Assertion>
+      </scenarios>
+    </task:Sequence>
+  </chain>
+</test:TestGroup>
 
-</task:Debug>
+

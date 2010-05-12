@@ -3,6 +3,43 @@
   >
   <scm:Change>
   
+    <revision>0.4.8
+    </revision>
+    
+    <authorId>miketoth
+    </authorId>
+    
+    <date>2010-05-12
+    </date>
+    
+    <detail>
+
+      <scm:Change>
+        
+        <notes>
+          <scm:Note>Completed escaping logic per JSON spec
+          </scm:Note>
+          <scm:Note>Support use where input is a primitive type.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/
+        </path>
+        
+        <resources>
+          <URI>JsonWriter.java
+          </URI>
+          <URI>Parser.java
+          </URI>
+          <URI>ToJson.java
+          </URI>
+        </resources>
+      </scm:Change>
+    </detail>
+  </scm:Change>
+
+  <scm:Change>
+  
     <revision>0.4.2
     </revision>
     
