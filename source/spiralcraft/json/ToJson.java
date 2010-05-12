@@ -41,7 +41,8 @@ public class ToJson<Tsource>
   {
     private spiralcraft.data.Type<Tsource> type;    
     private Channel<Tsource> source;
-    boolean dataTyped;
+    private final boolean dataTyped;
+    private final boolean dataEncodable;
     
     @SuppressWarnings("unchecked")
     public ToJsonChannel(Channel<Tsource> source)
@@ -65,7 +66,7 @@ public class ToJson<Tsource>
       dataTyped
         =DataComposite.class.isAssignableFrom(source.getContentType());
       
-      
+      dataEncodable=type.isDataEncodable();
     }
 
     @Override
@@ -80,22 +81,30 @@ public class ToJson<Tsource>
         if (val!=null)
         {
         
-          DataComposite data;
+          DataComposite data=null;
           if (dataTyped)
           { 
             data=(DataComposite) val;
           }
-          else
+          else if (dataEncodable)
           {
             data=type.toData(val);
           }
-        
-      
-          writer.writeToWriter(jwriter,data);
-          if (debug)
-          { log.fine("JSON="+jwriter.toString());
+          
+          if (data!=null)
+          {
+            writer.writeToWriter(jwriter,data);
+            if (debug)
+            { log.fine("JSON="+jwriter.toString());
+            }
+            return jwriter.toString();
           }
-          return jwriter.toString();
+          else if (!dataEncodable)
+          { return JsonWriter.escape(type.toString(val));
+          }
+          else
+          { return null;
+          }
         }
         else
         { return null;
