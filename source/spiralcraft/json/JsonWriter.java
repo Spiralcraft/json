@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import spiralcraft.text.ParseException;
 import spiralcraft.text.ParsePosition;
+import spiralcraft.util.string.StringUtil;
 
 public class JsonWriter
  implements ContentHandler
@@ -33,6 +34,29 @@ public class JsonWriter
       case '\"':
       case '\\':
         out.append("\'");
+        out.append(c);
+        continue;
+      case '\n':
+        out.append("\\n");
+        continue;
+      case '\b':
+        out.append("\\b");
+        continue;
+      case '\t':
+        out.append("\\t");
+        continue;
+      case '\r':
+        out.append("\\r");
+        continue;
+      case '\f':
+        out.append("\\f");
+        continue;
+      }
+
+      if (Character.isISOControl(c))
+      {
+        out.append("\\u"+StringUtil.prepad(Integer.toHexString(c),'0',4));
+        continue;
       }
       
       out.append(c);

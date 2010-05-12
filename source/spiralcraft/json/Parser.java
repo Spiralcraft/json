@@ -352,6 +352,8 @@ public class Parser
         case '"':
         case '\\':
           break;
+          
+          
         case 'u':
           context.advance();
           
@@ -365,6 +367,21 @@ public class Parser
             (Character.toChars(Integer.parseInt(new String(unicode),16)));
           consumed=true;
           break;
+          
+          
+        case 'r':
+          str.append('\r');
+        case 'n':
+          str.append('\n');
+        case 'b':
+          str.append('\b');
+        case 'f':
+          str.append('\f');
+        case 't':
+          str.append('\t');
+          consumed=true;
+          break;
+          
           
         default:
           throwUnexpected("Invalid escape sequence");          
