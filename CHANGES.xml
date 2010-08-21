@@ -3,6 +3,37 @@
   >
   <scm:Change>
   
+    <revision>0.4.10
+    </revision>
+    
+    <authorId>miketoth
+    </authorId>
+    
+    <date>2010-08-21
+    </date>
+    
+    <detail>
+
+      <scm:Change>
+        
+        <notes>
+          <scm:Note>[SCPUBLIC-26] Double quotes are not escaped properly
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/
+        </path>
+        
+        <resources>
+          <URI>JsonWriter.java
+          </URI>
+        </resources>
+      </scm:Change>
+    </detail>
+  </scm:Change>
+
+  <scm:Change>
+  
     <revision>0.4.8
     </revision>
     

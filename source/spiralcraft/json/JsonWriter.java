@@ -32,8 +32,9 @@ public class JsonWriter
       switch (c)
       {
       case '\"':
+      case '\'':
       case '\\':
-        out.append("\'");
+        out.append("\\");
         out.append(c);
         continue;
       case '\n':
