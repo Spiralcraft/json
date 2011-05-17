@@ -67,7 +67,7 @@ public class JsonWriter
   
   private final java.io.Writer out;
   private ParsePosition position;
-  private int level=0;
+//  private int level=0;
   private String indent="";  
   private StackFrame currentFrame=new StackFrame(null);
   
@@ -155,6 +155,7 @@ public class JsonWriter
     }
   }
 
+  @Override
   public void handleBoolean(String name,boolean value)
      throws ParseException    
   { 
@@ -173,6 +174,7 @@ public class JsonWriter
     }
   }
 
+  @Override
   public void handleNumber(String name,Number value)
      throws ParseException    
   { 
@@ -186,6 +188,7 @@ public class JsonWriter
     }
   }
   
+  @Override
   public void handleNull(String name)
      throws ParseException    
   { 
@@ -242,7 +245,7 @@ public class JsonWriter
   private void pushLevel()
     throws IOException
   { 
-    level++;
+//    level++;
     indent=indent+"  ";
     currentFrame=new StackFrame(currentFrame);
     
@@ -251,7 +254,7 @@ public class JsonWriter
   private void popLevel()
     throws IOException
   { 
-    level--;
+//    level--;
     indent=indent.substring(0,indent.length()-2);
     currentFrame=currentFrame.parent;
   }

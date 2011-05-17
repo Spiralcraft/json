@@ -44,7 +44,7 @@ public class ToJson<Tsource>
     private final boolean dataTyped;
     private final boolean dataEncodable;
     
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public ToJsonChannel(Channel<Tsource> source)
       throws BindException
     { 

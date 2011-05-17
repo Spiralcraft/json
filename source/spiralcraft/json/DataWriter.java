@@ -207,6 +207,7 @@ class Context
     { currentFrame=parentFrame;
     }
     
+    @SuppressWarnings("rawtypes")
     protected void writeValue(String name,Type type,Object value)
       throws ParseException
     { 
@@ -244,6 +245,7 @@ class Context
     
   }
 
+  @SuppressWarnings("rawtypes")
   abstract class TypeFrame
     extends Frame
   {
@@ -411,6 +413,8 @@ class Context
     }
   }
   
+
+  @SuppressWarnings("rawtypes")
   class TupleFrame
     extends TypeFrame
   {
@@ -498,12 +502,13 @@ class Context
     
   }
   
+
   class AggregateFrame
     extends TypeFrame
   {
     private final Aggregate<?> aggregate;
     private Iterator<?> aggregateIterator;
-    private int index;
+//    private int index;
   
     public AggregateFrame(Aggregate<?> aggregate,String memberName)
     { 
@@ -521,7 +526,7 @@ class Context
         startType();
         writer.openArray(memberName);
         aggregateIterator=aggregate.iterator();
-        index=0;
+//        index=0;
       }
       else if (aggregateIterator.hasNext())
       {
@@ -541,7 +546,7 @@ class Context
           { currentFrame=new PrimitiveFrame(type.getContentType(),null,object,false);
           }
         }
-        index++;
+//        index++;
       }
       else
       {
@@ -556,6 +561,7 @@ class Context
 
   
 
+  @SuppressWarnings("rawtypes")
   abstract class FieldFrame
     extends Frame
   {
@@ -592,6 +598,7 @@ class Context
     
   }
 
+  @SuppressWarnings("rawtypes")
   class AggregateFieldFrame
     extends FieldFrame
   {
@@ -599,7 +606,7 @@ class Context
     private Iterator<?> iterator;
     private Type componentType;
     private boolean hasOne;
-    private int index;
+//    private int index;
     
     public AggregateFieldFrame(Tuple tuple,Field field)
     { 
@@ -625,7 +632,7 @@ class Context
         openField();
         writer.openArray(field.getName());
         iterator=value.iterator();
-        index=0;
+//        index=0;
       }
       else if (iterator.hasNext())
       {
@@ -648,7 +655,7 @@ class Context
           }
           
         }
-        index++;
+//        index++;
       }
       else
       {
@@ -660,6 +667,8 @@ class Context
     }
   }
   
+
+  @SuppressWarnings("rawtypes")
   class SimpleFieldFrame
     extends FieldFrame
   {
