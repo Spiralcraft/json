@@ -3,6 +3,56 @@
   >
   <scm:Change>
   
+    <revision>0.4.14
+    </revision>
+    
+    <authorId>miketoth
+    </authorId>
+    
+    <date>
+    </date>
+    
+    <detail>
+      <scm:Change>
+        <revision>-dev2
+        </revision>
+        
+        <notes>
+          <scm:Note>Fix broken in-quote escape sequence parsing
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/Parser.java
+        </path>
+        
+      </scm:Change>
+      
+      <scm:Change>
+        <revision>-dev2
+        </revision>
+        
+        <notes>
+          <scm:Note>Warnings and unused code cleanup
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/
+        </path>
+        
+        <resources>
+          <URI>DataWriter.java
+          </URI>
+          <URI>JsonWriter.java
+          </URI>
+          <URI>ToJson.java
+          </URI>
+        </resources>
+      </scm:Change>
+    </detail>
+  </scm:Change>
+  
+  <scm:Change>
+  
     <revision>0.4.10
     </revision>
     
