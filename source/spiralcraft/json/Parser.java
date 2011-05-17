@@ -371,12 +371,20 @@ public class Parser
           
         case 'r':
           str.append('\r');
+          consumed=true;
+          break;
         case 'n':
           str.append('\n');
+          consumed=true;
+          break;
         case 'b':
           str.append('\b');
+          consumed=true;
+          break;
         case 'f':
           str.append('\f');
+          consumed=true;
+          break;
         case 't':
           str.append('\t');
           consumed=true;
