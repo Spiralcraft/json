@@ -22,12 +22,16 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+//import spiralcraft.log.ClassLog;
 import spiralcraft.text.LookaheadParserContext;
 import spiralcraft.text.ParseException;
 import spiralcraft.util.string.StringUtil;
 
 public class Parser
 {
+//  private static final ClassLog log
+//    =ClassLog.getInstance(Parser.class);
+  
   private static final int TT_WORD=-1;
   private static final int TT_EOF=-2;
 
@@ -100,17 +104,21 @@ public class Parser
   private void parseObject(String name)
     throws ParseException
   {
-    consumeToken();
+    nextToken();
     handler.openObject(name);
     if (context.getCurrentChar()!='}')
     {
       while (true)
       { 
+        // log.fine("["+context.getCurrentChar()+"]:["+charToken+"]:["+stringToken+"]");
         parseMember();
-        if (context.getCurrentChar()!=',')
+
+        if (charToken!=',')
         { break;
         }
-        consumeToken();
+        else
+        { nextToken();
+        }
       }
     }
     expect('}');
@@ -128,7 +136,7 @@ public class Parser
   private void parseArray(String name)
     throws ParseException
   {
-    consumeToken();
+    nextToken();
     handler.openArray(name);
     
     if (charToken!=']')
@@ -136,10 +144,12 @@ public class Parser
       while (true)
       { 
         parseValue(null);
-        if (context.getCurrentChar()!=',')
+        if (charToken!=',')
         { break;
         }
-        consumeToken();
+        else
+        { nextToken();
+        }
       }
     }
     expect(']');
@@ -167,7 +177,7 @@ public class Parser
       break;
     case '"':
       handler.handleString(name,stringToken);
-      consumeToken();
+      nextToken();
       break;
     default:
       throwUnexpected();
@@ -182,17 +192,17 @@ public class Parser
     if (stringToken.equals("true"))
     { 
       handler.handleBoolean(name,true);
-      consumeToken();
+      nextToken();
     }
     else if (stringToken.equals("false"))
     { 
       handler.handleBoolean(name,false);
-      consumeToken();
+      nextToken();
     }
     else if (stringToken.equals("null"))
     { 
       handler.handleNull(name);
-      consumeToken();
+      nextToken();
     }
     else if (stringToken.startsWith("-") 
             || Character.isDigit(stringToken.charAt(0))
@@ -259,7 +269,7 @@ public class Parser
         (name,new BigInteger(stringToken));
     }
     
-    consumeToken();
+    nextToken();
   }
   
   private int skipDigits(int pos)
@@ -303,16 +313,21 @@ public class Parser
     { throwUnexpected("Expected member name");
     }
     String name=stringToken;
-    consumeToken();
+    // log.fine("Member name="+stringToken);
+    
+    nextToken();
+
     expect(':');
     parseValue(name);
   }
   
   private boolean isWordChar(int token)
   { 
-    return 
+    boolean ret= 
       Character.isLetterOrDigit(token)
-      || ".-+".indexOf(token)>0;
+      || ".-+".indexOf(token)>-1;
+    
+    return ret;
   }
   
   private void readWord()
@@ -350,9 +365,9 @@ public class Parser
         switch (context.getCurrentChar())
         {
         case '"':
+        case '/':  
         case '\\':
           break;
-          
           
         case 'u':
           context.advance();
@@ -367,6 +382,7 @@ public class Parser
             (Character.toChars(Integer.parseInt(new String(unicode),16)));
           consumed=true;
           break;
+        
           
           
         case 'r':
@@ -412,33 +428,26 @@ public class Parser
     throws ParseException
   { 
     if (charToken!=token)
-    { throwUnexpected();
+    { throwUnexpected(token);
     }
-  }
-  
-  private void consumeToken()
-    throws ParseException
-  {
-    context.advance();
     nextToken();
   }
 
   private void nextToken()
     throws ParseException
   {
-    while (isWhitespace(context.getCurrentChar()))
-    { 
-//      ws.append(context.getCurrentChar());
-      context.advance();
-    }
-//    if (ws.length()>0)
-//    { 
-//      char[] whitespace=new char[ws.length()];
-//      ws.getChars(0,ws.length(),whitespace,0);
-//      handler.ignorableWhitespace(whitespace,0,whitespace.length);
-//      ws.setLength(0);
-//    }
+
     
+    while (isWhitespace(context.getCurrentChar()))
+    { context.advance();
+    }
+    
+    if (context.isEof())
+    {
+      charToken=TT_EOF;
+      stringToken=null;
+      return;
+    }
     
     if (context.getCurrentChar()=='"')
     { readQuotedString();
@@ -450,7 +459,11 @@ public class Parser
     { 
       charToken=context.getCurrentChar();
       stringToken=null;
+      if (!context.isEof())
+      { context.advance();
+      }
     }
+//    log.fine("nextToken=["+((char) charToken)+"]:["+stringToken+"]");
   }
   
   /**
@@ -489,7 +502,16 @@ public class Parser
       ("Unexpected token "+tokenString(),context.getPosition());
   }
   
+  private void throwUnexpected(char token)
+      throws ParseException
+  { 
+    throw new ParseException
+      ("Unexpected token ["+tokenString()+"], expected ["+token+"]"
+      ,context.getPosition()
+      );
+  }
+  
   private String tokenString()
-  { return StringUtil.debugFormat(context.getCurrentChar());
+  { return StringUtil.debugFormat((char) charToken);
   }
 }
