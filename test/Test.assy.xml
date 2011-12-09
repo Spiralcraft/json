@@ -3,12 +3,15 @@
   xmlns:test="class:/spiralcraft/test/"
   xmlns:j="class:/java/lang/"
   xmlns:ju="class:/java/util/"
+  xmlns:jn="class:/java/net/"
   xmlns:lang="class:/spiralcraft/lang"
   xmlns:fn="class:/spiralcraft/lang/functions/"
   xmlns:util="class:/spiralcraft/util/"
   xmlns:sutil="class:/spiralcraft/util/string/"
   xmlns:vfs="class:/spiralcraft/vfs/"
+  xmlns:vfsf="class:/spiralcraft/vfs/functions/"
   xmlns:json="class:/spiralcraft/json/"
+  xmlns:example="class:/spiralcraft/data/test/example/"
   xmlns="dynamic:/"
   >
   <name>spiralcraft.lang.test
@@ -46,6 +49,113 @@
           </testX>
           
         </test:Assertion>
+        
+        <test:Assertion>
+        
+          <name>Round trip
+          </name>
+          
+          <subjectX>
+            [@json:Node].@formatToString
+              ([@json:Node].@parse("{ x:\"one\", y:2, z:false}")
+              )
+          </subjectX>
+          
+          <testX>
+            .==("\r\n\r\n{\r\n  \"x\" :  \"one\"\r\n  ,\"y\" :  2\r\n  ,\"z\" :  false\r\n}")
+          </testX>
+          
+        </test:Assertion>
+        
+        <test:Assertion>
+        
+          <name>DataReader-1
+          </name>
+          
+          <subjectX>
+            [*jn:URI{"in/test2-foreign.json"}]
+                .[*vfsf:Resolve]
+                .[*vfsf:IO]
+                .[*json:FromJson{[@example:Customer]}]
+          </subjectX>
+          
+          <testX>
+            .{.@log("Text:"+.@tuple.toText("")),true}
+          </testX>
+          
+        </test:Assertion>        
+        
+        <test:Assertion>
+        
+          <name>DataReader-2
+          </name>
+          
+          <subjectX>
+            [*jn:URI{"in/test3-foreign.json"}]
+                .[*vfsf:Resolve]
+                .[*vfsf:IO]
+                .[*json:FromJson{[@example:Customer]}]
+          </subjectX>
+          
+          <testX>
+            true 
+          </testX>
+          
+        </test:Assertion>      
+        
+        <test:Assertion>
+        
+          <name>Parse
+          </name>
+          
+          <subjectX>
+            "[\"Hello\"]".[*json:FromJson{[@j:String][]}]
+          </subjectX>
+          
+          <testX>
+            true 
+          </testX>
+          
+        </test:Assertion>     
+        
+        <test:Assertion>
+        
+          <name>Unicode
+          </name>
+          
+          <subjectX>
+            "[\"\\\u0040Hello\"]".[*json:FromJson{[@j:String][]}]
+          </subjectX>
+          
+          <testX>
+            true 
+          </testX>
+          
+        </test:Assertion>  
+        
+        <test:Assertion>
+        
+          <name>Read file to node
+          </name>
+          
+          <subjectX>
+            [@json:Node].@formatToString
+              ([@json:Node].@parse
+                ([@j:String]
+                  .([*jn:URI{"in/test4-foreign.json"}]
+                    .[*vfsf:Resolve]
+                    .[*vfsf:IO]
+                  )
+                )
+              )
+          </subjectX>
+          
+          <testX>
+            true
+          </testX>
+          
+        </test:Assertion>        
+
       </scenarios>
     </task:Sequence>
   </chain>

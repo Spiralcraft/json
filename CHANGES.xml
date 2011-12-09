@@ -3,6 +3,62 @@
   >
   <scm:Change>
   
+    <revision>0.4.16
+    </revision>
+    
+    <authorId>miketoth
+    </authorId>
+    
+    <date>XXXX-XX-XX
+    </date>
+    
+    <detail>
+      <scm:Change>
+        <revision>-dev1
+        </revision>
+        
+        <notes>
+          <scm:Note>ContentHandlers and facilities for parsing JSON text into
+            both a node tree and into a spiralcraft.lang based object model.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>ArrayNode.java
+          </URI>
+          <URI>BooleanNode.java
+          </URI>
+          <URI>DataReader.java
+          </URI>
+          <URI>DocumentNode.java
+          </URI>
+          <URI>FromJson.java
+          </URI>
+          <URI>Node.java
+          </URI>
+          <URI>NullNode.java
+          </URI>
+          <URI>NumberNode.java
+          </URI>
+          <URI>ObjectNode.java
+          </URI>
+          <URI>Parser.java
+          </URI>
+          <URI>ParseTree.java
+          </URI>
+          <URI>StringNode.java
+          </URI>
+        </resources>
+        
+      </scm:Change>
+    </detail>
+  </scm:Change>
+  
+  <scm:Change>
+  
     <revision>0.4.14
     </revision>
     
