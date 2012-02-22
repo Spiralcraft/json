@@ -14,6 +14,19 @@
     
     <detail>
       <scm:Change>
+        <revision>-dev2
+        </revision>
+        
+        <notes>
+          <scm:Note>Remove debug log message
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/modules/json/DataReader.java
+        </path>
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev1
         </revision>
         
