@@ -31,10 +31,9 @@ import spiralcraft.lang.Reflector;
 import spiralcraft.lang.SimpleFocus;
 import spiralcraft.lang.spi.AbstractChannel;
 import spiralcraft.lang.util.LangUtil;
-import spiralcraft.log.ClassLog;
+//import spiralcraft.log.ClassLog;
 import spiralcraft.text.ParseException;
 import spiralcraft.text.ParsePosition;
-import spiralcraft.util.ArrayUtil;
 import spiralcraft.util.string.StringConverter;
 
 
@@ -44,8 +43,8 @@ import spiralcraft.util.string.StringConverter;
 public class DataReader
   implements ContentHandler
 {
-  private static final ClassLog log
-    =ClassLog.getInstance(DataReader.class);
+//  private static final ClassLog log
+//    =ClassLog.getInstance(DataReader.class);
   
   private Object _root;
   private Reflector<?> _rootReflector;
@@ -324,7 +323,6 @@ public class DataReader
     { 
       assertNoMember(name);
       this.value=(T) value;
-      log.fine("RootFrame value="+value);
     }
   }
 
