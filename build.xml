@@ -1,7 +1,7 @@
 <project name="spiralcraft-json" default="build" basedir=".">
 
   <property name="module" value="json"/>
-  <property name="buildVersion" value="0.4.16-dev2"/>
+  <property name="buildVersion" value="0.4.16"/>
   
   <path id="classpath">
     <pathelement location="lib/spiralcraft-core.jar"/>
