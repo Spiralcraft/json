@@ -3,6 +3,46 @@
   >
   <scm:Change>
   
+    <revision>0.4.17
+    </revision>
+    
+    <authorId>miketoth
+    </authorId>
+    
+    <date>
+    </date>
+    
+    <detail>
+      <scm:Change>
+        <revision>-dev1
+        </revision>
+
+        <notes>
+          <scm:Note>Provide ability to write Structs and other Reflector
+            bases types to JSON.
+          </scm:Note>
+          <scm:Note>Provide ability to read JSON into Structs
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/modules/json
+        </path>
+        
+        <resources>
+          <URI>DataWriter.java
+          </URI>
+          <URI>FromJson.java
+          </URI>
+          <URI>ToJson.java
+          </URI>
+        </resources>
+      </scm:Change>
+        
+    </detail>
+  </scm:Change>
+
+  <scm:Change>
+  
     <revision>0.4.16
     </revision>
     

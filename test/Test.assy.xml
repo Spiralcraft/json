@@ -27,7 +27,7 @@
           <name>Simple serialization of a reflector
           </name>
           
-          <subjectX>[test:Assertion].[*json:ToJson]
+          <subjectX>[test:Assertion]{{ name:=..name }}.[*json:ToJson]
           </subjectX>
           
           <testX>.contains([test:Assertion].name)
@@ -155,6 +155,52 @@
           </testX>
           
         </test:Assertion>        
+
+        <test:Assertion>
+        
+          <name>Struct to JSON 1
+          </name>
+          
+          <subjectX>
+            { name:="John Doe"
+            , amount:=15.432
+            , active:=true
+            , missing:=null
+            }.[*json:ToJson]
+          </subjectX>
+
+          <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
+
+{
+  "name" :  "John Doe"
+  ,"amount" :  15.432
+  ,"active" :  true
+}]]></textLiteral>
+        
+        </test:Assertion>        
+
+
+        <test:Assertion>
+        
+          <name>Struct from JSON 1
+          </name>
+          
+          <subjectX>
+            "{ \"name\": \"John Doe\", \"amount\": 15.432, \"active\": true }"
+              .[*json:FromJson{
+                { name:[@j:String]
+                , amount:[@j:Float]
+                , active:[@j:Boolean]
+                , missing:[@j:Void]
+                }
+              }]
+          </subjectX>
+          
+          <testX><![CDATA[
+            name=="John Doe" && amount==15.432 && active
+            ]]>
+          </testX>
+        </test:Assertion>
 
       </scenarios>
     </task:Sequence>
