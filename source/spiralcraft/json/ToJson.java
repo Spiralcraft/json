@@ -3,6 +3,7 @@ package spiralcraft.json;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import spiralcraft.common.ContextualException;
 import spiralcraft.data.DataComposite;
 import spiralcraft.data.DataException;
 import spiralcraft.data.lang.DataReflector;
@@ -14,6 +15,7 @@ import spiralcraft.lang.Channel;
 import spiralcraft.lang.ChannelFactory;
 import spiralcraft.lang.Expression;
 import spiralcraft.lang.Focus;
+import spiralcraft.lang.parser.StructNode.StructReflector;
 import spiralcraft.lang.reflect.BeanReflector;
 import spiralcraft.lang.spi.AbstractChannel;
 import spiralcraft.log.ClassLog;
@@ -43,6 +45,7 @@ public class ToJson<Tsource>
     private Channel<Tsource> source;
     private final boolean dataTyped;
     private final boolean dataEncodable;
+    private final boolean struct;
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public ToJsonChannel(Channel<Tsource> source)
@@ -67,8 +70,10 @@ public class ToJson<Tsource>
         =DataComposite.class.isAssignableFrom(source.getContentType());
       
       dataEncodable=type.isDataEncodable();
+      struct=source.getReflector() instanceof StructReflector;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected String retrieve()
     {
@@ -81,19 +86,17 @@ public class ToJson<Tsource>
         if (val!=null)
         {
         
-          DataComposite data=null;
-          if (dataTyped)
-          { 
-            data=(DataComposite) val;
+          Tsource data=null;
+          if (dataTyped || struct)
+          { data=val;
           }
           else if (dataEncodable)
-          {
-            data=type.toData(val);
+          { data=(Tsource) type.toData(val);
           }
           
           if (data!=null)
           {
-            writer.writeToWriter(jwriter,data);
+            writer.writeToWriter(jwriter,source);
             if (debug)
             { log.fine("JSON="+jwriter.toString());
             }
@@ -110,7 +113,7 @@ public class ToJson<Tsource>
         { return null;
         }
       }
-      catch (DataException x)
+      catch (ContextualException x)
       { throw new AccessException("Error writing json text",x);
       }
       catch (IOException x)

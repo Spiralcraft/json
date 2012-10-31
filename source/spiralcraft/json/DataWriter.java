@@ -15,13 +15,15 @@
 package spiralcraft.json;
 
 
-import spiralcraft.data.DataComposite;
+import spiralcraft.common.ContextualException;
 import spiralcraft.data.DeltaTuple;
 import spiralcraft.data.Tuple;
 import spiralcraft.data.Aggregate;
 import spiralcraft.data.Field;
 import spiralcraft.data.Type;
 import spiralcraft.data.DataException;
+import spiralcraft.data.lang.DataReflector;
+import spiralcraft.data.lang.PrimitiveReflector;
 
 import spiralcraft.text.ParseException;
 import spiralcraft.util.ArrayUtil;
@@ -30,6 +32,14 @@ import spiralcraft.util.string.StringUtil;
 import spiralcraft.vfs.Resolver;
 import spiralcraft.vfs.Resource;
 
+import spiralcraft.lang.BindException;
+import spiralcraft.lang.Channel;
+import spiralcraft.lang.IterationCursor;
+import spiralcraft.lang.IterationDecorator;
+import spiralcraft.lang.Reflector;
+import spiralcraft.lang.Signature;
+import spiralcraft.lang.SimpleFocus;
+import spiralcraft.lang.spi.SimpleChannel;
 import spiralcraft.log.ClassLog;
 import spiralcraft.log.Level;
 
@@ -53,26 +63,26 @@ public class DataWriter
   protected static final Level debugLevel
     =ClassLog.getInitialDebugLevel(DataWriter.class, null);
   
-  public void writeToURI
+  public <T> void writeToURI
     (URI resourceUri
-    ,DataComposite data
+    ,Channel<T> source
     )
-    throws IOException,DataException
+    throws IOException,ContextualException
   {
     writeToResource
       (Resolver.getInstance().resolve(resourceUri)
-      ,data
+      ,source
       );
   }
 
-  public void writeToResource
+  public <T> void writeToResource
     (Resource resource
-    ,DataComposite data
+    ,Channel<T> source
     )
-    throws IOException,DataException
+    throws IOException,ContextualException
   {
     OutputStream out=resource.getOutputStream();
-    writeToOutputStream(out,data);
+    writeToOutputStream(out,source);
     if (out!=null)
     {
       out.flush();
@@ -80,25 +90,28 @@ public class DataWriter
     }
   }
   
-  public void writeToWriter(java.io.Writer writer,DataComposite data)
-    throws IOException,DataException
+  public <T> void writeToWriter
+    (java.io.Writer writer
+    ,Channel<T> source
+    )
+    throws IOException,ContextualException
   { 
     try
-    { new Context(writer).write(data);
+    { new Context(writer).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
     }
   }
   
-  public void writeToOutputStream
+  public <T> void writeToOutputStream
     (OutputStream out
-    ,DataComposite data
+    ,Channel<T> source
     )
-    throws DataException
+    throws ContextualException
   {
     try
-    { new Context(out).write(data);
+    { new Context(out).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -113,6 +126,11 @@ public class DataWriter
 @SuppressWarnings("unchecked") // Mostly runtime type resolution
 class Context
 {
+  protected static final ClassLog log
+    =ClassLog.getInstance(DataWriter.class);
+  protected static final Level logLevel
+    =ClassLog.getInitialDebugLevel(DataWriter.class, Level.FINE);
+
 
 //  private static final URI STANDARD_NAMESPACE_URI
 //    =URI.create("class:/spiralcraft/data/types/standard/");
@@ -135,27 +153,67 @@ class Context
     this.writer=new JsonWriter(writer);
   }
   
-  public void write(DataComposite data)
-    throws ParseException,DataException
+  public <T> void write(Channel<T> source)
+    throws ParseException,ContextualException
   {
+    T data=source.get();
     if (data==null)
-    { 
-      throw new IllegalArgumentException
-        ("Cannot write a null DataComposite object");
+    { return;
     }
+
+    currentFrame=createFrame(source.getReflector(),data,null);
+
     //writer.startDocument();
-    if (data.isTuple())
-    { currentFrame=new TupleFrame(data.asTuple(),null);
-    }
-    else
-    { currentFrame=new AggregateFrame(data.asAggregate(),null);
-    }
+        
     while (currentFrame!=null)
     { currentFrame.next();
     }
     //writer.endDocument();
   }
 
+  @SuppressWarnings("rawtypes")
+  public <T> Frame createFrame(Reflector<T> reflector,T data,String memberName)
+    throws DataException,ContextualException
+  {
+    if (data instanceof Tuple)
+    { return new TupleFrame((Tuple) data,memberName);
+    }
+    else if (data instanceof Aggregate)
+    { return new AggregateFrame((Aggregate<?>) data,memberName);
+    }
+    else if (reflector instanceof PrimitiveReflector)
+    { 
+      return new PrimitiveFrame
+        ( ((PrimitiveReflector) reflector).getType(),memberName,data,false);
+    }
+    else if (reflector.getStringConverter()!=null
+             || reflector.getContentType()==String.class
+             )
+    { return new ValueFrame(reflector,memberName,data,false);
+    }
+    else if (data.getClass().isArray())
+    { 
+      try
+      {
+        return new ArrayFrame
+            (reflector
+            ,new SimpleChannel<T>(reflector,data,true)
+              .<IterationDecorator>decorate(IterationDecorator.class)
+            ,memberName
+            );
+      }
+      catch (BindException x)
+      { throw new DataException("Error converting "+data+" to data",x);
+      }
+    }
+    else
+    { return new ObjectFrame(reflector,data,memberName);
+    }
+      
+    
+    
+  }
+  
   /**
    * Holder for an element of the data tree
    */
@@ -166,7 +224,7 @@ class Context
     protected final String indentString;
 
     public abstract void next()
-      throws ParseException,DataException;
+      throws ParseException,ContextualException;
     
     public String getNamespace(URI uri)
     { 
@@ -225,6 +283,30 @@ class Context
       }
     }
     
+    @SuppressWarnings("rawtypes")
+    protected void writeValue(String name,Reflector reflector,Object value)
+      throws ParseException
+    { 
+      if (value!=null)
+      { 
+        if (value instanceof Boolean)
+        { writer.handleBoolean(name,(Boolean) value);
+        }
+        else if (value instanceof Number)
+        { writer.handleNumber(name,(Number) value);
+        } 
+        else
+        { 
+          if (reflector.getStringConverter()!=null)
+          { writer.handleString(name,reflector.getStringConverter().toString(value));
+          }
+          else
+          { writer.handleString(name,value.toString());
+          }
+        }
+      }
+    }    
+    
 //    protected void writeWhitespace(String str)
 //      throws ParseException
 //    { 
@@ -233,34 +315,64 @@ class Context
 //      }
 //    }
     
-    protected void pushCompositeFrame(DataComposite data,String memberName)
-    {
-      if (data.isTuple())
-      { currentFrame=new TupleFrame(data.asTuple(),memberName);
-      }
-      else
-      { currentFrame=new AggregateFrame(data.asAggregate(),memberName);
-      }
+    
+  }
+  
+  abstract class GenericFrame<T>
+    extends Frame
+  {
+    protected final String memberName;
+    protected final Reflector<T> reflector;
+
+    public GenericFrame(Reflector<T> reflector,String memberName)
+    { 
+      this.reflector=reflector;
+      this.memberName=memberName;
     }
+    
+    protected final void startType()
+      throws ParseException
+    {
+//      writeWhitespace("\r\n");
+//      writeWhitespace(indentString);
+      
+      
+      // writer.openObject(memberName);
+    }
+    
+    
+    protected final void endType(boolean addLine)
+      throws ParseException
+    {
+//      if (addLine)
+//      {
+//        writeWhitespace("\r\n");
+//        writeWhitespace(indentString);
+//      }
+      
+// Do nothing b/c no extra element required in json
+      // writer.closeObject(memberName);
+    }    
+    
     
   }
 
   @SuppressWarnings("rawtypes")
   abstract class TypeFrame
-    extends Frame
+    extends GenericFrame
   {
     protected final Type type;
     protected final String typeName;
     protected final URI typeNamespace;
-    protected final String memberName;
 //    private final HashMap<URI,String> namespaceMap
 //      =new HashMap<URI,String>();
 //    private final HashMap<String,URI> reverseNamespaceMap
 //      =new HashMap<String,URI>();
     
     public TypeFrame(Type type,String memberName)
+      throws BindException
     {
-      this.memberName=memberName;
+      super(DataReflector.getInstance(type),memberName);
 
       this.type=type;
       URI typeUri=type.getURI();
@@ -340,33 +452,59 @@ class Context
 //        
 //    }
     
-    protected final void startType()
-      throws ParseException
-    {
-//      writeWhitespace("\r\n");
-//      writeWhitespace(indentString);
-      
-      
-      // writer.openObject(memberName);
-    }
-    
-    
-    protected final void endType(boolean addLine)
-      throws ParseException
-    {
-//      if (addLine)
-//      {
-//        writeWhitespace("\r\n");
-//        writeWhitespace(indentString);
-//      }
-      
-// Do nothing b/c no extra element required in json
-      // writer.closeObject(memberName);
-    }
+
     
     
   }
 
+  class ValueFrame<T>
+    extends GenericFrame<T>
+  {
+    private final T value;
+    private final boolean singleContext;
+    
+    public ValueFrame
+      (Reflector<T> reflector
+      ,String memberName
+      ,T value
+      ,boolean singleContext
+      )
+      throws BindException
+    {
+      super(reflector,memberName);
+      this.value=value;
+      this.singleContext=singleContext; 
+    }
+    
+    @Override
+    public void next()
+      throws ParseException
+    {
+      if (!singleContext)
+      { startType();
+      }
+      
+      try
+      {  
+        writeValue(memberName,reflector,value);
+        log.fine("Wrote "+memberName+"="+value);
+      }
+      catch (IllegalArgumentException x)
+      { 
+        throw new ParseException
+          ("Error writing value ["+value+"] for "+reflector.getTypeURI()
+          ,writer.getLocator()
+          ,x);
+      }
+      
+      if (!singleContext)
+      { endType(false);
+      }
+      finish();
+      return;
+    }
+  }
+  
   class PrimitiveFrame
     extends TypeFrame
   {
@@ -379,6 +517,7 @@ class Context
       ,Object value
       ,boolean singleContext
       )
+      throws BindException
     {
       super(type,memberName);
       this.value=value;
@@ -408,6 +547,7 @@ class Context
       if (!singleContext)
       { endType(false);
       }
+      
       finish();
       return;
     }
@@ -423,6 +563,7 @@ class Context
     private boolean empty=true;
     
     public TupleFrame(Tuple tuple,String memberName)
+      throws BindException
     { 
       super(tuple.getType(),memberName);
       this.tuple=tuple;
@@ -439,8 +580,8 @@ class Context
         writer.openObject(memberName);
         if (tuple instanceof DeltaTuple)
         { 
-          if (DataWriter.debugLevel.canLog(Level.FINE))
-          { DataWriter.log.fine("Writing DeltaTuple "+tuple.getType().getURI());
+          if (logLevel.isFine())
+          { log.fine("Writing DeltaTuple "+tuple.getType().getURI());
           }
           Field[] dirtyFields=((DeltaTuple) tuple).getDirtyFields();
           if (dirtyFields!=null)
@@ -456,8 +597,8 @@ class Context
         { 
           if (tuple.getType()!=null)
           { 
-            if (DataWriter.debugLevel.canLog(Level.FINE))
-            { DataWriter.log.fine("Writing Tuple "+tuple.getType().getURI());
+            if (logLevel.isFine())
+            { log.fine("Writing Tuple "+tuple.getType().getURI());
             }
             // Make sure we include base type Fields
             fieldIterator
@@ -465,10 +606,10 @@ class Context
           }
           else
           { 
-            if (DataWriter.debugLevel.canLog(Level.FINE))
-            { DataWriter.log.fine("Writing untyped Tuple "+tuple.getFieldSet());
+            if (logLevel.isFine())
+            { log.fine("Writing untyped Tuple "+tuple.getFieldSet());
             }
-            DataWriter.log.fine("Writing untyped tuple "+tuple.getFieldSet());
+            log.fine("Writing untyped tuple "+tuple.getFieldSet());
             fieldIterator=tuple.getFieldSet().fieldIterable().iterator();
           }
         }
@@ -477,8 +618,8 @@ class Context
       {
         
         Field field=fieldIterator.next();
-        if (DataWriter.debugLevel.canLog(Level.FINE))
-        { DataWriter.log.fine("Starting field "+field.getURI());
+        if (logLevel.isFine())
+        { log.fine("Starting field "+field.getURI());
         }
         if (field.getValue(tuple)!=null)
         {
@@ -511,6 +652,7 @@ class Context
 //    private int index;
   
     public AggregateFrame(Aggregate<?> aggregate,String memberName)
+      throws ContextualException
     { 
       super(aggregate.getType(),memberName);
       this.aggregate=aggregate;
@@ -519,7 +661,7 @@ class Context
   
     @Override
     public void next()
-      throws ParseException,DataException
+      throws ParseException,ContextualException
     {
       if (aggregateIterator==null)
       { 
@@ -531,21 +673,12 @@ class Context
       else if (aggregateIterator.hasNext())
       {
         Object object=aggregateIterator.next();
-        if (object instanceof DataComposite)
-        { pushCompositeFrame((DataComposite) object,null);
-        }
-        else
-        { 
-          if (type.getContentType().isDataEncodable())
-          { 
-            DataComposite data
-              =type.getContentType().toData(object);
-            pushCompositeFrame(data,null);
-          }
-          else
-          { currentFrame=new PrimitiveFrame(type.getContentType(),null,object,false);
-          }
-        }
+        currentFrame
+          =createFrame
+            (DataReflector.getInstance(aggregate.getType().getContentType())
+            ,object
+            ,null
+            );
 //        index++;
       }
       else
@@ -559,6 +692,111 @@ class Context
   
   }
 
+  @SuppressWarnings("rawtypes")
+  class ObjectFrame<T>
+    extends GenericFrame<T>
+  {
+    private final Channel<T> data;
+    private boolean empty=true;
+    private Iterator<Signature> fieldIterator;
+    
+    public ObjectFrame(Reflector reflector,T data,String memberName)
+      throws ContextualException
+    { 
+      super(reflector,memberName);
+      this.data=new SimpleChannel<T>(reflector,data,true);
+    }
+    
+    
+    @Override
+    public void next()
+      throws ParseException,ContextualException
+    {
+      if (fieldIterator==null)
+      { 
+        startType();
+        writer.openObject(memberName);
+        fieldIterator
+          =reflector.getProperties(data)
+            .iterator();
+        if (!fieldIterator.hasNext())
+        { log.fine("NO PROPS: "+reflector+" : "+data.get());
+        }
+        
+      }
+      else if (fieldIterator.hasNext())
+      {
+        Signature sig=fieldIterator.next();
+        if (logLevel.isFine())
+        { log.fine("Starting property "+reflector.getTypeURI()+"#"+sig.getName());
+        }
+        
+        Channel propChannel
+          =data.resolve(new SimpleFocus(null),sig.getName(),null);
+        if (propChannel.getContentType()==Class.class)
+        { return;
+        }
+        Object fieldVal=propChannel.get();
+        if (fieldVal!=null)
+        {
+          empty=false;
+          currentFrame
+            =createFrame(propChannel.getReflector(),fieldVal,sig.getName());
+        }
+      }
+      else
+      {
+        endType(!empty);
+        writer.closeObject(memberName);
+        finish();
+        return;
+      }
+    }
+    
+  }  
+  
+  class ArrayFrame<A,T>
+    extends GenericFrame<A>
+  {
+    private final IterationDecorator<A,T> deco;
+    private IterationCursor<T> iteration;
+    
+//    private int index;
+  
+    public ArrayFrame(Reflector<A> reflector,IterationDecorator<A,T> deco,String memberName)
+    { 
+      super(reflector,memberName);
+      this.deco=deco;
+    }
+  
+  
+    @Override
+    public void next()
+      throws ParseException,ContextualException
+    {
+      if (iteration==null)
+      { 
+        startType();
+        iteration=deco.iterator();
+        writer.openArray(memberName);
+//        index=0;
+      }
+      else if (iteration.hasNext())
+      {
+        T object=iteration.next();
+        currentFrame=createFrame(deco.getComponentReflector(),object,null);
+//        index++;
+      }
+      else
+      {
+        endType(true);
+        writer.closeArray(memberName);
+        finish();
+        return;
+      }
+    }
+  
+  }
   
 
   @SuppressWarnings("rawtypes")
@@ -617,7 +855,7 @@ class Context
     
     @Override
     public void next()
-      throws ParseException,DataException
+      throws ParseException,ContextualException
     {
       Aggregate value=(Aggregate) field.getValue(tuple);
       if (value==null)
@@ -638,23 +876,10 @@ class Context
       {
         hasOne=true;
         Object item=iterator.next();
+        currentFrame
+          =createFrame
+            (DataReflector.getInstance(componentType),item,field.getName());
 //        System.out.println("Aggregate Field: iterating "+item);
-        if (item instanceof DataComposite)
-        { currentFrame=new TupleFrame(((DataComposite) item).asTuple(),field.getName());
-        }
-        else
-        { 
-          if (componentType.isDataEncodable())
-          { 
-            DataComposite data
-              =componentType.toData(item);
-            pushCompositeFrame(data,null);
-          }
-          else
-          { currentFrame=new PrimitiveFrame(componentType,null,item,false);
-          }
-          
-        }
 //        index++;
       }
       else
@@ -681,7 +906,7 @@ class Context
     
     @Override
     public void next()
-      throws ParseException,DataException
+      throws ParseException,ContextualException
     {
       Object value=field.getValue(tuple);
       if (value==null)
@@ -695,25 +920,9 @@ class Context
         opened=true;
         openField();
 
-        
-        if (value instanceof DataComposite)
-        { currentFrame=new TupleFrame((Tuple) value,field.getName());
-        }
-        else
-        { 
-          if (field.getType().isDataEncodable())
-          { 
-            Type ftype=field.getType();
-            DataComposite data
-              =ftype.toData(value);
-            pushCompositeFrame(data,field.getName());
-          }
-          else
-          { 
-            primitive=true;
-            currentFrame=new PrimitiveFrame(field.getType(),field.getName(),value,true);
-          }
-        }
+        currentFrame
+          =createFrame
+            (DataReflector.getInstance(field.getType()),value,field.getName());
       }
       else
       {

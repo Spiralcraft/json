@@ -12,6 +12,7 @@ import spiralcraft.lang.ChannelFactory;
 import spiralcraft.lang.Expression;
 import spiralcraft.lang.Focus;
 import spiralcraft.lang.Reflector;
+import spiralcraft.lang.parser.Struct;
 import spiralcraft.lang.spi.SourcedChannel;
 import spiralcraft.text.ParseException;
 
@@ -30,7 +31,13 @@ public class FromJson<Ttarget,Tsource>
   public FromJson(Reflector<Ttarget> resultType)
   { this.resultType=resultType;
   }
-  
+
+  @SuppressWarnings("unchecked")
+  public FromJson(Struct struct)
+  {
+    resultType=(Reflector<Ttarget>) struct.getReflector();
+  }
+
   @Override
   public Channel<Ttarget> bindChannel(
     Channel<Tsource> source,
