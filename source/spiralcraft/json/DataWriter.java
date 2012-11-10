@@ -129,7 +129,7 @@ class Context
   protected static final ClassLog log
     =ClassLog.getInstance(DataWriter.class);
   protected static final Level logLevel
-    =ClassLog.getInitialDebugLevel(DataWriter.class, Level.FINE);
+    =ClassLog.getInitialDebugLevel(DataWriter.class, Level.INFO);
 
 
 //  private static final URI STANDARD_NAMESPACE_URI
