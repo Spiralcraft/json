@@ -201,6 +201,19 @@
             ]]>
           </testX>
         </test:Assertion>
+        
+        <test:Assertion>
+        
+          <name>Array type single element
+          </name>
+          
+          <subjectX>
+            [{ "one" }].[*json:ToJson]
+          </subjectX>
+          
+          <testX>true
+          </testX>
+        </test:Assertion>
 
       </scenarios>
     </task:Sequence>

@@ -14,6 +14,27 @@
     
     <detail>
       <scm:Change>
+        <revision>-dev3
+        </revision>
+
+        <notes>
+          <scm:Note>Fix issue where input Channel would be queried twice and
+            data conversion skipped, generating unexpected results.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>DataWriter.java
+          </URI>
+          <URI>ToJson.java
+          </URI>
+        </resources>
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev2
         </revision>
 
