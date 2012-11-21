@@ -104,6 +104,21 @@ public class DataWriter
     }
   }
   
+  public <T> void writeToWriter
+    (java.io.Writer writer
+    ,Reflector<T> reflector
+    ,T data
+    )
+    throws IOException,ContextualException
+  { 
+    try
+    { new Context(writer).write(reflector,data);
+    }
+    catch (ParseException x)
+    { throw new DataException("Error writing data "+x,x);
+    }
+  }
+  
   public <T> void writeToOutputStream
     (OutputStream out
     ,Channel<T> source
@@ -162,6 +177,23 @@ class Context
     }
 
     currentFrame=createFrame(source.getReflector(),data,null);
+
+    //writer.startDocument();
+        
+    while (currentFrame!=null)
+    { currentFrame.next();
+    }
+    //writer.endDocument();
+  }
+  
+  public <T> void write(Reflector<T> reflector,T data)
+    throws ParseException,ContextualException
+  {
+    if (data==null)
+    { return;
+    }
+
+    currentFrame=createFrame(reflector,data,null);
 
     //writer.startDocument();
         

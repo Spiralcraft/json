@@ -95,8 +95,8 @@ public class ToJson<Tsource>
           }
           
           if (data!=null)
-          {
-            writer.writeToWriter(jwriter,source);
+          { 
+            writer.writeToWriter(jwriter,source.getReflector(),data);
             if (debug)
             { log.fine("JSON="+jwriter.toString());
             }
