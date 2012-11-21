@@ -211,8 +211,10 @@
             [{ "one" }].[*json:ToJson]
           </subjectX>
           
-          <testX>true
-          </testX>
+          <textLiteral whitespace="true">
+[
+  "one"
+]</textLiteral>
         </test:Assertion>
 
       </scenarios>
