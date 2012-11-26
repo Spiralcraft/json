@@ -211,10 +211,42 @@
             [{ "one" }].[*json:ToJson]
           </subjectX>
           
-          <textLiteral whitespace="true">
+          <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
+
 [
   "one"
-]</textLiteral>
+]]]></textLiteral>
+        </test:Assertion>
+        
+        <test:Assertion>
+        
+          <name>Array struct
+          </name>
+          
+          <subjectX>
+            [{ "one","two","three" }]
+            #{ { x:=.. } }
+            .@log("type="+.@type)
+            .[*json:ToJson]
+          </subjectX>
+          
+          <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
+
+[
+  
+  {
+    "x" :  "one"
+  }
+  ,
+  {
+    "x" :  "two"
+  }
+  ,
+  {
+    "x" :  "three"
+  }
+]]]></textLiteral>
+
         </test:Assertion>
 
       </scenarios>

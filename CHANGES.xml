@@ -21,6 +21,8 @@
           <scm:Note>Fix issue where input Channel would be queried twice and
             data conversion skipped, generating unexpected results.
           </scm:Note>
+          <scm:Note>Fix issue converting arrays of structs to JSON
+          </scm:Note>
         </notes>
         
         <path>source/spiralcraft/json
