@@ -39,6 +39,7 @@ import spiralcraft.lang.IterationDecorator;
 import spiralcraft.lang.Reflector;
 import spiralcraft.lang.Signature;
 import spiralcraft.lang.SimpleFocus;
+import spiralcraft.lang.parser.Struct;
 import spiralcraft.lang.spi.SimpleChannel;
 import spiralcraft.log.ClassLog;
 import spiralcraft.log.Level;
@@ -213,11 +214,15 @@ class Context
     else if (data instanceof Aggregate)
     { return new AggregateFrame((Aggregate<?>) data,memberName);
     }
+    else if (data instanceof Struct)
+    { return new ObjectFrame(((Struct) data).getReflector(),data,memberName);
+    }
     else if (reflector instanceof PrimitiveReflector)
     { 
       return new PrimitiveFrame
         ( ((PrimitiveReflector) reflector).getType(),memberName,data,false);
     }
+
     else if (reflector.getStringConverter()!=null
              || reflector.getContentType()==String.class
              )

@@ -16,6 +16,7 @@ import spiralcraft.lang.ChannelFactory;
 import spiralcraft.lang.Expression;
 import spiralcraft.lang.Focus;
 import spiralcraft.lang.parser.StructNode.StructReflector;
+import spiralcraft.lang.reflect.ArrayReflector;
 import spiralcraft.lang.reflect.BeanReflector;
 import spiralcraft.lang.spi.AbstractChannel;
 import spiralcraft.log.ClassLog;
@@ -45,7 +46,7 @@ public class ToJson<Tsource>
     private Channel<Tsource> source;
     private final boolean dataTyped;
     private final boolean dataEncodable;
-    private final boolean struct;
+    private final boolean renderAsIs;
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public ToJsonChannel(Channel<Tsource> source)
@@ -70,7 +71,11 @@ public class ToJson<Tsource>
         =DataComposite.class.isAssignableFrom(source.getContentType());
       
       dataEncodable=type.isDataEncodable();
-      struct=source.getReflector() instanceof StructReflector;
+      renderAsIs=source.getReflector() instanceof StructReflector
+        || ( source.getReflector() instanceof ArrayReflector
+              && ((ArrayReflector) source.getReflector())
+                   .getRootComponentReflector() instanceof StructReflector
+           );
     }
 
     @SuppressWarnings("unchecked")
@@ -87,7 +92,7 @@ public class ToJson<Tsource>
         {
         
           Tsource data=null;
-          if (dataTyped || struct)
+          if (dataTyped || renderAsIs)
           { data=val;
           }
           else if (dataEncodable)
