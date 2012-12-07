@@ -18,6 +18,24 @@
         </revision>
 
         <notes>
+          <scm:Note>Fix improper generation of data-convertable POJOs
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>ToJson.java
+          </URI>
+        </resources>
+      </scm:Change>
+
+      <scm:Change>
+        <revision>-dev4
+        </revision>
+
+        <notes>
           <scm:Note>Fix improper generation of arrays-in-objects regression
           </scm:Note>
         </notes>

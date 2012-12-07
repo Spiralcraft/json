@@ -287,13 +287,14 @@
           <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
 
 {
-  "foo" :  "hello"
-  ,"barA" :  
+  "class" :  "spiralcraft.lang.test.Bar"
+  ,"theArray" :  
   [
     "one"
     ,"two"
     ,"three"
   ]
+  ,"theField" :  "default"
 }]]></textLiteral>
 
         </test:Assertion>
