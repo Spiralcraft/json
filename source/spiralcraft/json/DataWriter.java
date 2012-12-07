@@ -217,18 +217,9 @@ class Context
     else if (data instanceof Struct)
     { return new ObjectFrame(((Struct) data).getReflector(),data,memberName);
     }
-    else if (reflector instanceof PrimitiveReflector)
-    { 
-      return new PrimitiveFrame
-        ( ((PrimitiveReflector) reflector).getType(),memberName,data,false);
-    }
-
-    else if (reflector.getStringConverter()!=null
-             || reflector.getContentType()==String.class
-             )
-    { return new ValueFrame(reflector,memberName,data,false);
-    }
-    else if (data.getClass().isArray())
+    else if (data.getClass().isArray() 
+             || data instanceof Iterable
+            )
     { 
       try
       {
@@ -242,6 +233,17 @@ class Context
       catch (BindException x)
       { throw new DataException("Error converting "+data+" to data",x);
       }
+    }
+    else if (reflector instanceof PrimitiveReflector)
+    { 
+      return new PrimitiveFrame
+        ( ((PrimitiveReflector) reflector).getType(),memberName,data,false);
+    }
+
+    else if (reflector.getStringConverter()!=null
+             || reflector.getContentType()==String.class
+             )
+    { return new ValueFrame(reflector,memberName,data,false);
     }
     else
     { return new ObjectFrame(reflector,data,memberName);
@@ -915,7 +917,7 @@ class Context
         Object item=iterator.next();
         currentFrame
           =createFrame
-            (DataReflector.getInstance(componentType),item,field.getName());
+            (DataReflector.getInstance(componentType),item,null);
 //        System.out.println("Aggregate Field: iterating "+item);
 //        index++;
       }
