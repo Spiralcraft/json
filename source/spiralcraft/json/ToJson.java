@@ -15,6 +15,7 @@ import spiralcraft.lang.Channel;
 import spiralcraft.lang.ChannelFactory;
 import spiralcraft.lang.Expression;
 import spiralcraft.lang.Focus;
+import spiralcraft.lang.Reflector;
 import spiralcraft.lang.parser.StructNode.StructReflector;
 import spiralcraft.lang.reflect.ArrayReflector;
 import spiralcraft.lang.reflect.BeanReflector;
@@ -47,6 +48,7 @@ public class ToJson<Tsource>
     private final boolean dataTyped;
     private final boolean dataEncodable;
     private final boolean renderAsIs;
+    private Reflector<Tsource> reflector;
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public ToJsonChannel(Channel<Tsource> source)
@@ -54,8 +56,10 @@ public class ToJson<Tsource>
     { 
       super(BeanReflector.<String>getInstance(String.class));
       this.source=source;
-      if (source.getReflector() instanceof DataReflector)
-      { type=((DataReflector) source.getReflector()).getType();
+      this.reflector=source.getReflector();
+      
+      if (reflector instanceof DataReflector)
+      { type=((DataReflector) reflector).getType();
       }
       else
       { 
@@ -70,12 +74,17 @@ public class ToJson<Tsource>
       dataTyped
         =DataComposite.class.isAssignableFrom(source.getContentType());
       
-      dataEncodable=type.isDataEncodable();
-      renderAsIs=source.getReflector() instanceof StructReflector
-        || ( source.getReflector() instanceof ArrayReflector
-              && ((ArrayReflector) source.getReflector())
+      renderAsIs=reflector instanceof StructReflector
+        || ( reflector instanceof ArrayReflector
+              && ((ArrayReflector) reflector)
                    .getRootComponentReflector() instanceof StructReflector
            );
+      
+      dataEncodable=type.isDataEncodable();
+      if (dataEncodable)
+      { reflector=DataReflector.getInstance(type);
+      }
+      
     }
 
     @SuppressWarnings("unchecked")
@@ -101,7 +110,7 @@ public class ToJson<Tsource>
           
           if (data!=null)
           { 
-            writer.writeToWriter(jwriter,source.getReflector(),data);
+            writer.writeToWriter(jwriter,reflector,data);
             if (debug)
             { log.fine("JSON="+jwriter.toString());
             }
