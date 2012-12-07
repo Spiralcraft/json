@@ -12,6 +12,7 @@
   xmlns:vfsf="class:/spiralcraft/vfs/functions/"
   xmlns:json="class:/spiralcraft/json/"
   xmlns:example="class:/spiralcraft/data/test/example/"
+  xmlns:langtest="class:/spiralcraft/lang/test/"
   xmlns="dynamic:/"
   >
   <name>spiralcraft.lang.test
@@ -226,7 +227,6 @@
           <subjectX>
             [{ "one","two","three" }]
             #{ { x:=.. } }
-            .@log("type="+.@type)
             .[*json:ToJson]
           </subjectX>
           
@@ -249,6 +249,54 @@
 
         </test:Assertion>
 
+        <test:Assertion>
+        
+          <name>Array in struct
+          </name>
+          
+          <subjectX>
+            { foo:="hello"
+              ,barA:=[{ "one","two","three" }]
+            }
+            .[*json:ToJson]
+          </subjectX>
+          
+          <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
+
+{
+  "foo" :  "hello"
+  ,"barA" :  
+  [
+    "one"
+    ,"two"
+    ,"three"
+  ]
+}]]></textLiteral>
+
+        </test:Assertion>
+
+        <test:Assertion>
+        
+          <name>Object output
+          </name>
+          
+          <subjectX>[@langtest:Bar].()
+            .[*json:ToJson]
+          </subjectX>
+          
+          <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
+
+{
+  "foo" :  "hello"
+  ,"barA" :  
+  [
+    "one"
+    ,"two"
+    ,"three"
+  ]
+}]]></textLiteral>
+
+        </test:Assertion>
       </scenarios>
     </task:Sequence>
   </chain>
