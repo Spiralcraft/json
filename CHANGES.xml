@@ -14,6 +14,34 @@
     
     <detail>
       <scm:Change>
+        <revision>-dev5
+        </revision>
+
+        <notes>
+          <scm:Note>Fix issue where strings would not be escaped when a source
+            supplies primitive strings.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/JsonWriter.java
+        </path>
+      </scm:Change>
+
+      <scm:Change>
+        <revision>-dev5
+        </revision>
+
+        <notes>
+          <scm:Note>Changed pretty-printing to reduce extra line feeds and
+            keep commas at the end of the previous element.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/JsonWriter.java
+        </path>
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev4
         </revision>
 

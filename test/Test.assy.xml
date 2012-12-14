@@ -53,6 +53,66 @@
         
         <test:Assertion>
         
+          <name>Primitive String
+          </name>
+          
+          <subjectX>
+            "yo"
+            .[*json:ToJson]
+          </subjectX>
+          
+          <testX>.=="\"yo\""
+          </testX>
+          
+        </test:Assertion>
+
+        <test:Assertion>
+        
+          <name>Primitive Number
+          </name>
+          
+          <subjectX>
+            3.14159265
+            .[*json:ToJson]
+          </subjectX>
+          
+          <testX>.=="3.14159265"
+          </testX>
+          
+        </test:Assertion>
+
+        <test:Assertion>
+        
+          <name>Primitive Boolean true
+          </name>
+          
+          <subjectX>
+            true
+            .[*json:ToJson]
+          </subjectX>
+          
+          <testX>.=="true"
+          </testX>
+          
+        </test:Assertion>
+
+        <test:Assertion>
+        
+          <name>Primitive Boolean false
+          </name>
+          
+          <subjectX>
+            false
+            .[*json:ToJson]
+          </subjectX>
+          
+          <testX>.=="false"
+          </testX>
+          
+        </test:Assertion>
+
+        <test:Assertion>
+        
           <name>Round trip
           </name>
           
@@ -63,7 +123,7 @@
           </subjectX>
           
           <testX>
-            .==("\r\n\r\n{\r\n  \"x\" :  \"one\"\r\n  ,\"y\" :  2\r\n  ,\"z\" :  false\r\n}")
+            .==("\r\n{\"x\" :  \"one\",\r\n  \"y\" :  2,\r\n  \"z\" :  false\r\n}")
           </testX>
           
         </test:Assertion>
@@ -171,11 +231,9 @@
           </subjectX>
 
           <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
-
-{
-  "name" :  "John Doe"
-  ,"amount" :  15.432
-  ,"active" :  true
+{"name" :  "John Doe",
+  "amount" :  15.432,
+  "active" :  true
 }]]></textLiteral>
         
         </test:Assertion>        
@@ -213,9 +271,7 @@
           </subjectX>
           
           <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
-
-[
-  "one"
+["one"
 ]]]></textLiteral>
         </test:Assertion>
         
@@ -231,19 +287,14 @@
           </subjectX>
           
           <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
-
 [
+  {"x" :  "one"
+  },
   
-  {
-    "x" :  "one"
-  }
-  ,
-  {
-    "x" :  "two"
-  }
-  ,
-  {
-    "x" :  "three"
+  {"x" :  "two"
+  },
+  
+  {"x" :  "three"
   }
 ]]]></textLiteral>
 
@@ -262,14 +313,11 @@
           </subjectX>
           
           <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
-
-{
-  "foo" :  "hello"
-  ,"barA" :  
-  [
-    "one"
-    ,"two"
-    ,"three"
+{"foo" :  "hello",
+  "barA" :  
+  ["one",
+    "two",
+    "three"
   ]
 }]]></textLiteral>
 
@@ -285,16 +333,13 @@
           </subjectX>
           
           <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
-
-{
-  "class" :  "spiralcraft.lang.test.Bar"
-  ,"theArray" :  
-  [
-    "one"
-    ,"two"
-    ,"three"
-  ]
-  ,"theField" :  "default"
+{"class" :  "spiralcraft.lang.test.Bar",
+  "theArray" :  
+  ["one",
+    "two",
+    "three"
+  ],
+  "theField" :  "default"
 }]]></textLiteral>
 
         </test:Assertion>
