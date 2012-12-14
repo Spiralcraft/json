@@ -239,7 +239,6 @@ class Context
       return new PrimitiveFrame
         ( ((PrimitiveReflector) reflector).getType(),memberName,data,false);
     }
-
     else if (reflector.getStringConverter()!=null
              || reflector.getContentType()==String.class
              )
@@ -526,7 +525,9 @@ class Context
       try
       {  
         writeValue(memberName,reflector,value);
-        log.fine("Wrote "+memberName+"="+value);
+        if (logLevel.isFine())
+        { log.fine("Wrote "+memberName+"="+value);
+        }
       }
       catch (IllegalArgumentException x)
       { 
