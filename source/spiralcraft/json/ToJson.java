@@ -117,7 +117,9 @@ public class ToJson<Tsource>
             return jwriter.toString();
           }
           else if (!dataEncodable)
-          { return JsonWriter.escape(type.toString(val));
+          { 
+            writer.writeToWriter(jwriter,reflector,val);
+            return jwriter.toString();
           }
           else
           { return null;
