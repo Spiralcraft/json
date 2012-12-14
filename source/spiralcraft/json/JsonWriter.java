@@ -206,9 +206,11 @@ public class JsonWriter
   private void writeMember(String name)
     throws IOException
   {
-    nextLine();
+    
     if (currentFrame.elementCount>0)
-    { out.write(",");
+    { 
+      out.write(",");
+      nextLine();      
     }
     currentFrame.elementCount++;
     if (name!=null)
