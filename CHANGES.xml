@@ -14,6 +14,20 @@
     
     <detail>
       <scm:Change>
+        <revision>-dev6
+        </revision>
+
+        <notes>
+          <scm:Note>Escape single quote using unicode instead of 
+            backslash as JSON spec doesn't support escaping single quotes
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/JsonWriter.java
+        </path>
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev5
         </revision>
 
