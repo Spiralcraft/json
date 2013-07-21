@@ -32,7 +32,6 @@ public class JsonWriter
       switch (c)
       {
       case '\"':
-      case '\'':
       case '\\':
         out.append("\\");
         out.append(c);
@@ -51,6 +50,12 @@ public class JsonWriter
         continue;
       case '\f':
         out.append("\\f");
+        continue;
+      case '\'':
+        // Single quotes cannot be escaped, so we use the unicode so we
+        //   can safely embed JSON strings into javascript.
+        //  
+        out.append("\\u0027");
         continue;
       }
 
