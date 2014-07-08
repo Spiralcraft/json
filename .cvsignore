@@ -4,3 +4,4 @@ build.number
 *.class
 bin
 *.local
+packages
