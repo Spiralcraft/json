@@ -8,7 +8,6 @@ import spiralcraft.data.DataComposite;
 import spiralcraft.data.DataException;
 import spiralcraft.data.lang.DataReflector;
 import spiralcraft.data.reflect.ReflectionType;
-
 import spiralcraft.lang.AccessException;
 import spiralcraft.lang.BindException;
 import spiralcraft.lang.Channel;
@@ -27,6 +26,7 @@ public class ToJson<Tsource>
   implements ChannelFactory<String,Tsource>
 {
 
+  @SuppressWarnings("unused")
   private static final ClassLog log
     =ClassLog.getInstance(ToJson.class);
   
