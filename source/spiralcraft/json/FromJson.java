@@ -26,7 +26,7 @@ public class FromJson<Ttarget,Tsource>
   }
   
   private Reflector<Ttarget> resultType;
-  
+  private boolean ignoreUnrecognizedFields;
   
   public FromJson(Reflector<Ttarget> resultType)
   { this.resultType=resultType;
@@ -38,6 +38,10 @@ public class FromJson<Ttarget,Tsource>
     resultType=(Reflector<Ttarget>) struct.getReflector();
   }
 
+  public void setIgnoreUnrecognizedFields(boolean ignoreUnrecognizedFields)
+  { this.ignoreUnrecognizedFields=ignoreUnrecognizedFields;
+  }
+  
   @Override
   public Channel<Ttarget> bindChannel(
     Channel<Tsource> source,
@@ -94,6 +98,9 @@ public class FromJson<Ttarget,Tsource>
       try
       {
         DataReader reader=new DataReader(resultType,null);
+        if (ignoreUnrecognizedFields)
+        { reader.setIgnoreUnrecognizedFields(true);
+        }
         Parser parser=new Parser(input,reader);
         parser.parse();
         return (Ttarget) reader.getValue();
