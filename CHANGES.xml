@@ -15,7 +15,25 @@
     <detail>
 
       <scm:Change>
-        <revision>-dev8
+        <revision>-dev10
+        </revision>
+
+        <notes>
+          <scm:Note>Bracket out debug message
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>DataReader.java
+          </URI>
+        </resources>
+      </scm:Change>
+
+      <scm:Change>
+        <revision>-dev9
         </revision>
 
         <notes>
@@ -29,9 +47,7 @@
         </path>
         
         <resources>
-          <URI>FromJson.java
-          </URI>
-          <URI>DataReader.java
+          <URI>Parser.java
           </URI>
         </resources>
       </scm:Change>
