@@ -610,7 +610,10 @@ public class DataReader
         { throw x;
         }
         else
-        { log.fine("Ignoring member '"+mappedName+"'");
+        { 
+          if (debug)
+          { log.fine("Ignoring member '"+mappedName+"'");
+          }
         }
       }
       return null;
