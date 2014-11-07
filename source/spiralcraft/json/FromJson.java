@@ -27,6 +27,7 @@ public class FromJson<Ttarget,Tsource>
   
   private Reflector<Ttarget> resultType;
   private boolean ignoreUnrecognizedFields;
+  private boolean debug;
   
   public FromJson(Reflector<Ttarget> resultType)
   { this.resultType=resultType;
@@ -38,6 +39,15 @@ public class FromJson<Ttarget,Tsource>
     resultType=(Reflector<Ttarget>) struct.getReflector();
   }
 
+  /**
+   * Log information as types are mapped and data is read
+   * 
+   * @param debug
+   */
+  public void setDebug(boolean debug)
+  { this.debug=debug;
+  }
+  
   public void setIgnoreUnrecognizedFields(boolean ignoreUnrecognizedFields)
   { this.ignoreUnrecognizedFields=ignoreUnrecognizedFields;
   }
@@ -101,6 +111,7 @@ public class FromJson<Ttarget,Tsource>
         if (ignoreUnrecognizedFields)
         { reader.setIgnoreUnrecognizedFields(true);
         }
+        reader.setDebug(FromJson.this.debug);
         Parser parser=new Parser(input,reader);
         parser.parse();
         return (Ttarget) reader.getValue();

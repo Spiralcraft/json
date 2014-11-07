@@ -31,7 +31,7 @@ import spiralcraft.lang.Reflector;
 import spiralcraft.lang.SimpleFocus;
 import spiralcraft.lang.spi.AbstractChannel;
 import spiralcraft.lang.util.LangUtil;
-//import spiralcraft.log.ClassLog;
+import spiralcraft.log.ClassLog;
 import spiralcraft.text.ParseException;
 import spiralcraft.text.ParsePosition;
 import spiralcraft.util.string.StringConverter;
@@ -43,8 +43,8 @@ import spiralcraft.util.string.StringConverter;
 public class DataReader
   implements ContentHandler
 {
-//  private static final ClassLog log
-//    =ClassLog.getInstance(DataReader.class);
+  private static final ClassLog log
+    =ClassLog.getInstance(DataReader.class);
   
   private Object _root;
   private Reflector<?> _rootReflector;
@@ -53,6 +53,7 @@ public class DataReader
   private ParsePosition position=new ParsePosition();
   
   private boolean ignoreUnrecognizedFields;
+  private boolean debug;
   
 //  private boolean _started;
   private Focus<?> focus=new SimpleFocus<Void>(null);
@@ -66,9 +67,6 @@ public class DataReader
   { return new DataReader(reflector,null);
   }
   
-  public void setIgnoreUnrecognizedFields(boolean ignore)
-  { this.ignoreUnrecognizedFields=ignore;
-  }
   
   @SuppressWarnings("rawtypes")
   public DataReader(Reflector<?> rootReflector,Object root)
@@ -78,7 +76,14 @@ public class DataReader
     this._rootReflector=rootReflector;
   }
   
+  public void setIgnoreUnrecognizedFields(boolean ignore)
+  { this.ignoreUnrecognizedFields=ignore;
+  }
 
+  void setDebug(boolean debug)
+  { this.debug=debug;
+  }
+  
   public Object getValue()
   { return _currentFrame.value;
   }
@@ -303,7 +308,7 @@ public class DataReader
     void openObject(String name)
     { 
       assertNoMember(name);
-      push(new ObjectFrame(this,_rootReflector));
+      push(new ObjectFrame(this,null,_rootReflector));
       _currentFrame.initValue(_root);
     }
     
@@ -312,7 +317,7 @@ public class DataReader
     void openArray(String name)
     { 
       assertNoMember(name);
-      push(new ArrayFrame(this,_rootReflector));
+      push(new ArrayFrame(this,null,_rootReflector));
       _currentFrame.initValue(_root);
     }
     
@@ -378,10 +383,12 @@ public class DataReader
     
     @SuppressWarnings("rawtypes")
     private StringConverter converter;
+    private String memberName;
     
-    ArrayFrame(Frame<?> parent,Reflector<T> reflector)
+    ArrayFrame(Frame<?> parent,String memberName,Reflector<T> reflector)
     { 
       super(parent);
+      this.memberName=memberName;
       this.reflector=reflector;
     }
     
@@ -403,7 +410,7 @@ public class DataReader
       {
         assertNoMember(name);
         ensureCollection();
-        push(new ObjectFrame(this,decorator.getComponentReflector()));        
+        push(new ObjectFrame(this,null,decorator.getComponentReflector()));        
       }
       catch (ContextualException x)
       { throw new ParseException
@@ -476,7 +483,7 @@ public class DataReader
         ensureCollection();
         value=(T) decorator.newCollection();
         value=(T) decorator.addAll(value,collection.iterator());
-        parent.addValue(name,value);
+        parent.addValue(memberName,value);
       }
       catch (ContextualException x)
       { throw new ParseException("Error adding value "+name+": "+value,position,x);
@@ -487,9 +494,12 @@ public class DataReader
   class ObjectFrame<T>
     extends Frame<T>
   {
-    ObjectFrame(Frame<?> parent,Reflector<T> reflector)
+    private String memberName;
+    
+    ObjectFrame(Frame<?> parent,String memberName,Reflector<T> reflector)
     { 
       super(parent);
+      this.memberName=memberName;
       this.reflector=reflector;
     }
     
@@ -510,9 +520,10 @@ public class DataReader
     { 
       try
       {
-        Channel prop=mapProperty(name);
+        String mappedName=mapName(name);
+        Channel prop=mapProperty(mappedName);
         if (prop!=null)
-        { push(new ObjectFrame(this,prop.getReflector()));        
+        { push(new ObjectFrame(this,mappedName,prop.getReflector()));        
         }
         else
         { push(new DummyFrame(this));
@@ -532,9 +543,10 @@ public class DataReader
     { 
       try
       {
-        Channel prop=mapProperty(name);
+        String mappedName=mapName(name);
+        Channel prop=mapProperty(mappedName);
         if (prop!=null)
-        { push(new ArrayFrame(this,prop.getReflector()));        
+        { push(new ArrayFrame(this,mappedName,prop.getReflector()));        
         }
         else
         { push(new DummyFrame(this));
@@ -552,7 +564,8 @@ public class DataReader
     {
       try
       {
-        Channel prop=mapProperty(name);
+        String mappedName=mapName(name);
+        Channel prop=mapProperty(mappedName);
         if (prop!=null)
         {
           if (value==null)
@@ -579,20 +592,25 @@ public class DataReader
       
     }
     
-    Channel<?> mapProperty(String name)
+    Channel<?> mapProperty(String mappedName)
       throws ContextualException
     {
-      String mappedName=mapName(name);
       ensureValue();
       try
       {
         Channel<?> prop=getChannel().resolve(focus,mappedName,null);
+        if (debug)
+        { log.fine("Mapped member '"+mappedName+"' to "+prop );
+        }
         return prop;
       }
       catch (ContextualException x)
       { 
         if (!ignoreUnrecognizedFields)
         { throw x;
+        }
+        else
+        { log.fine("Ignoring member '"+mappedName+"'");
         }
       }
       return null;
@@ -603,7 +621,7 @@ public class DataReader
       throws ParseException
     { 
       try
-      { parent.addValue(name,value);
+      { parent.addValue(memberName,value);
       }
       catch (ContextualException x)
       { throw new ParseException("Error adding value "+name+": "+value,position,x);
