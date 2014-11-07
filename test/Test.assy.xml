@@ -343,6 +343,29 @@
 }]]></textLiteral>
 
         </test:Assertion>
+        
+        <test:Assertion>
+          <name>Struct array input
+          </name>
+        
+          <subjectX>
+            "[ {title: \"one\" },{ title: \"two\"},{ title: \"three\"} ]"
+            .[*json:FromJson
+                { 
+                  [{ 
+                    { title:[@j:String] 
+                    } 
+                  }].@type
+            
+                }
+              ]
+            
+            
+          </subjectX>
+          
+          <testX>@[2].title=="three"
+          </testX>
+        </test:Assertion>
       </scenarios>
     </task:Sequence>
   </chain>
