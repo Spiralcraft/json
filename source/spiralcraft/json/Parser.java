@@ -387,22 +387,27 @@ public class Parser
           
         case 'r':
           str.append('\r');
+          context.advance();
           consumed=true;
           break;
         case 'n':
           str.append('\n');
+          context.advance();
           consumed=true;
           break;
         case 'b':
           str.append('\b');
+          context.advance();
           consumed=true;
           break;
         case 'f':
           str.append('\f');
+          context.advance();
           consumed=true;
           break;
         case 't':
           str.append('\t');
+          context.advance();
           consumed=true;
           break;
           
