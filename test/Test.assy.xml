@@ -366,6 +366,47 @@
           <testX>@[2].title=="three"
           </testX>
         </test:Assertion>
+
+        <test:Assertion>
+          <name>CR Escape
+          </name>
+        
+          <subjectX>
+            "{ name: \&quot;hello\\nthere\&quot; }"
+            .[*json:FromJson
+                { 
+                  { name:[@j:String]
+                  }
+            
+                }
+              ]
+            
+            
+          </subjectX>
+          
+          <testX>.name=="hello\nthere"
+          </testX>
+        </test:Assertion>
+        
+        <test:Assertion>
+        
+          <name>Read file with CRs
+          </name>
+          
+          <subjectX>
+            [*jn:URI{"in/test5-foreign.json"}]
+                .[*vfsf:Resolve]
+                .[*vfsf:IO]
+                .[*json:FromJson{ { summary:[@j:String]} }]
+
+          </subjectX>
+          
+          <testX>
+            .summary=="Awesome dude\n\nreally cool\n\nanother line"
+          </testX>
+          
+        </test:Assertion>        
+
       </scenarios>
     </task:Sequence>
   </chain>

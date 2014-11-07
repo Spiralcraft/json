@@ -19,6 +19,28 @@
         </revision>
 
         <notes>
+          <scm:Note>Fix issue where backslash-char escape sequences added 
+            the char to the content. This was not an issue with unicode
+            escape sequences.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>FromJson.java
+          </URI>
+          <URI>DataReader.java
+          </URI>
+        </resources>
+      </scm:Change>
+
+      <scm:Change>
+        <revision>-dev8
+        </revision>
+
+        <notes>
           <scm:Note>Fix issue where member names of Array and Object properties
             were not properly mapped.
           </scm:Note>
