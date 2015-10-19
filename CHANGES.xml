@@ -15,6 +15,25 @@
     <detail>
 
       <scm:Change>
+        <revision>-dev11
+        </revision>
+
+        <notes>
+          <scm:Note>Hyphens in field names get mapped to camel-case just like
+            underscores.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>DataReader.java
+          </URI>
+        </resources>
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev10
         </revision>
 
