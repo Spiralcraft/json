@@ -117,7 +117,7 @@ public class FromJson<Ttarget,Tsource>
         return (Ttarget) reader.getValue();
       }
       catch (ParseException x)
-      { throw new AccessException(x);
+      { throw new AccessException(new JsonException("Error parsing input",x));
       }
     }
 

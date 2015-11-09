@@ -22,7 +22,7 @@ package spiralcraft.json;
  *
  */
 public class JsonException
-  extends Exception
+  extends RuntimeException
 {
 
   private static final long serialVersionUID = -8902382215363040861L;
