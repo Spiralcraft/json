@@ -19,6 +19,27 @@
         </revision>
 
         <notes>
+          <scm:Note>JsonException is now unchecked and used when a
+            ParseException occurs parsing JSON text.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>FromJson.java
+          </URI>
+          <URI>JsonException.java
+          </URI>
+        </resources>
+      </scm:Change>
+
+      <scm:Change>
+        <revision>-dev11
+        </revision>
+
+        <notes>
           <scm:Note>Hyphens in field names get mapped to camel-case just like
             underscores.
           </scm:Note>
