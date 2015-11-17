@@ -407,6 +407,25 @@
           
         </test:Assertion>        
 
+        <test:Assertion>
+        
+          <name>Dir Listing
+          </name>
+          
+          <subjectX>
+            [*jn:URI{"in"}]
+                .[*vfsf:Resolve]
+                .children#{ { name:=..localName, size:=..size, lastModified:=..lastModified } }
+                .[*json:ToJson{ debug:=true} ]
+
+          </subjectX>
+          
+          <testX>
+            true
+          </testX>
+          
+        </test:Assertion>        
+
       </scenarios>
     </task:Sequence>
   </chain>

@@ -30,6 +30,12 @@ public class ToJson<Tsource>
   private static final ClassLog log
     =ClassLog.getInstance(ToJson.class);
   
+  private boolean debug;
+  
+  public void setDebug(boolean debug)
+  { this.debug=debug;
+  }
+  
   @Override
   public Channel<String> bindChannel
     (Channel<Tsource> source
@@ -85,6 +91,9 @@ public class ToJson<Tsource>
       { reflector=DataReflector.getInstance(type);
       }
       
+      if (ToJson.this.debug)
+      { log.fine("ToJson: reflector="+reflector);
+      }
     }
 
     @SuppressWarnings("unchecked")
