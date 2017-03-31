@@ -15,6 +15,21 @@
     <detail>
 
       <scm:Change>
+        <revision>-dev12
+        </revision>
+
+        <notes>
+          <scm:Note>Output null values as null literals instead of omitting
+            them.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/DataWriter.java
+        </path>
+
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev11
         </revision>
 

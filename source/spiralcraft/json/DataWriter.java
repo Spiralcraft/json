@@ -208,7 +208,10 @@ class Context
   public <T> Frame createFrame(Reflector<T> reflector,T data,String memberName)
     throws DataException,ContextualException
   {
-    if (data instanceof Tuple)
+    if (data==null)
+    { return new NullFrame(reflector,memberName);
+    }
+    else if (data instanceof Tuple)
     { return new TupleFrame((Tuple) data,memberName);
     }
     else if (data instanceof Aggregate)
@@ -319,6 +322,9 @@ class Context
         { writer.handleString(name,type.toString(value));
         }
       }
+      else
+      { writer.handleNull(name);
+      }
     }
     
     @SuppressWarnings("rawtypes")
@@ -342,6 +348,9 @@ class Context
           { writer.handleString(name,value.toString());
           }
         }
+      }
+      else
+      { writer.handleNull(name);
       }
     }    
     
@@ -495,6 +504,39 @@ class Context
     
   }
 
+  @SuppressWarnings("rawtypes")
+  class NullFrame
+    extends GenericFrame
+  {
+    public NullFrame(Reflector reflector,String memberName)
+    { super(reflector,memberName);
+    }
+
+    @Override
+    public void next()
+      throws ParseException
+    {
+      
+      try
+      {  
+        writeValue(memberName,reflector,null);
+        if (logLevel.isFine())
+        { log.fine("Wrote "+memberName+"=null");
+        }
+      }
+      catch (IllegalArgumentException x)
+      { 
+        throw new ParseException
+          ("Error writing null for "+reflector.getTypeURI()
+          ,writer.getLocator()
+          ,x);
+      }
+      
+      finish();
+      return;
+    }
+  }
+  
   class ValueFrame<T>
     extends GenericFrame<T>
   {
