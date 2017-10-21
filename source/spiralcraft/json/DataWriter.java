@@ -939,7 +939,7 @@ class Context
     public void next()
       throws ParseException,ContextualException
     {
-      Aggregate value=(Aggregate) field.getValue(tuple);
+      Object value=field.getValue(tuple);
       if (value==null)
       { 
         finish();
@@ -951,7 +951,12 @@ class Context
         opened=true;
         openField();
         writer.openArray(field.getName());
-        iterator=value.iterator();
+        if (value.getClass().isArray())
+        { iterator=ArrayUtil.primitiveArrayIterator(value);
+        }
+        else 
+        { iterator=((Iterable) value).iterator();
+        }
 //        index=0;
       }
       else if (iterator.hasNext())
