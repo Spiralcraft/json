@@ -15,6 +15,20 @@
     <detail>
 
       <scm:Change>
+        <revision>-dev13
+        </revision>
+
+        <notes>
+          <scm:Note>Handle fields which contain arrays of primitives
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/DataWriter.java
+        </path>
+
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev12
         </revision>
 
