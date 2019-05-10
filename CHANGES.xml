@@ -15,6 +15,20 @@
     <detail>
 
       <scm:Change>
+        <revision>-dev14
+        </revision>
+
+        <notes>
+          <scm:Note>Simplify usage of JSON parser from Java code.
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json/FromJson.java
+        </path>
+
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev13
         </revision>
 
