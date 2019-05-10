@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 
+import spiralcraft.common.callable.BinaryFunction;
 import spiralcraft.lang.AccessException;
 import spiralcraft.lang.BindException;
 import spiralcraft.lang.Channel;
@@ -13,7 +14,9 @@ import spiralcraft.lang.Expression;
 import spiralcraft.lang.Focus;
 import spiralcraft.lang.Reflector;
 import spiralcraft.lang.parser.Struct;
+import spiralcraft.lang.reflect.BeanReflector;
 import spiralcraft.lang.spi.SourcedChannel;
+import spiralcraft.lang.spi.ThreadLocalChannel;
 import spiralcraft.text.ParseException;
 
 public class FromJson<Ttarget,Tsource>
@@ -52,13 +55,67 @@ public class FromJson<Ttarget,Tsource>
   { this.ignoreUnrecognizedFields=ignoreUnrecognizedFields;
   }
   
+  
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  public BinaryFunction<byte[],Ttarget,Ttarget,ParseException> getBinaryFn()
+    throws BindException
+  { return (BinaryFunction) getFn((Reflector<Tsource>) BeanReflector.getInstance(byte[].class));
+  }
+    
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  public BinaryFunction<String,Ttarget,Ttarget,ParseException> getStringFn()
+    throws BindException
+  { return (BinaryFunction) getFn((Reflector<Tsource>) BeanReflector.getInstance(String.class));
+  }
+    
+  private BinaryFunction<Tsource,Ttarget,Ttarget,ParseException> getFn(final Reflector<Tsource> inputR)
+    throws BindException
+  {
+    return new BinaryFunction<Tsource,Ttarget,Ttarget,ParseException>()
+    {
+      final ThreadLocalChannel<Tsource> inputChannel
+        =new ThreadLocalChannel<Tsource>
+          (inputR);
+      final ThreadLocalChannel<Ttarget> constructor
+        =new ThreadLocalChannel<Ttarget>(resultType);
+      
+      @SuppressWarnings("unchecked")
+      final Channel<Ttarget> outputChannel
+        =new FromJsonChannel((Channel<Tsource>) inputChannel,constructor);   
+      
+      @Override
+      public Ttarget evaluate(Tsource input,Ttarget root)
+        throws ParseException
+      { 
+        try
+        { 
+          inputChannel.push(input);
+          constructor.push(root);
+          return outputChannel.get();
+        }
+        finally
+        { 
+          constructor.pop();
+          inputChannel.pop();
+        }
+      }
+    };
+  }
+  
+  @SuppressWarnings("unchecked")
   @Override
   public Channel<Ttarget> bindChannel(
     Channel<Tsource> source,
     Focus<?> focus,
     Expression<?>[] arguments)
     throws BindException
-  { return new FromJsonChannel(source);
+  { 
+    @SuppressWarnings("rawtypes")
+    Channel constructor
+      =arguments!=null && arguments.length>0
+      ?focus.bind(arguments[0])
+      :null;
+    return new FromJsonChannel(source,constructor);
   }
 
   
@@ -67,11 +124,13 @@ public class FromJson<Ttarget,Tsource>
   {
 
     private InputType inputType;
+    private Channel<Ttarget> constructor;
     
-    FromJsonChannel(Channel<Tsource> source)
+    FromJsonChannel(Channel<Tsource> source,Channel<Ttarget> constructor)
       throws BindException
     { 
       super(resultType,source);
+      this.constructor=constructor;
       if (source.getContentType()==byte[].class)
       { inputType=InputType.BYTEARRAY;
       }
@@ -107,7 +166,11 @@ public class FromJson<Ttarget,Tsource>
       
       try
       {
-        DataReader reader=new DataReader(resultType,null);
+        DataReader reader
+          =new DataReader
+            (resultType
+            ,constructor!=null?constructor.get():null
+            );
         if (ignoreUnrecognizedFields)
         { reader.setIgnoreUnrecognizedFields(true);
         }
