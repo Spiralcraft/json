@@ -176,6 +176,12 @@ public class DataReader
         +Character.toUpperCase(name.charAt(i+1))
         +name.substring(i+2);
     }
+    while ( (i=name.indexOf('~')) >=0)
+    { 
+      name=name.substring(0,i)
+        +"_"
+        +(i<name.length()?name.substring(i+1):"");
+    }
     return name;
   }
 
