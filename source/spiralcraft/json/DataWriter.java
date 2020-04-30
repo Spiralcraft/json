@@ -64,6 +64,12 @@ public class DataWriter
   protected static final Level debugLevel
     =ClassLog.getInitialDebugLevel(DataWriter.class, null);
   
+  boolean addFormat;
+  
+  public void setAddFormat(boolean addFormat)
+  { this.addFormat=addFormat;
+  }
+  
   public <T> void writeToURI
     (URI resourceUri
     ,Channel<T> source
@@ -98,7 +104,7 @@ public class DataWriter
     throws IOException,ContextualException
   { 
     try
-    { new Context(writer).write(source);
+    { new Context(writer,addFormat).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -113,7 +119,7 @@ public class DataWriter
     throws IOException,ContextualException
   { 
     try
-    { new Context(writer).write(reflector,data);
+    { new Context(writer,addFormat).write(reflector,data);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -127,7 +133,7 @@ public class DataWriter
     throws ContextualException
   {
     try
-    { new Context(out).write(source);
+    { new Context(out,addFormat).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -154,19 +160,19 @@ class Context
   private final JsonWriter writer;
   private Frame currentFrame; 
   
-  public Context(OutputStream out)
+  public Context(OutputStream out,boolean addFormat)
   { 
     try
-    { writer=new JsonWriter(new OutputStreamWriter(out,"UTF-8"));
+    { writer=new JsonWriter(new OutputStreamWriter(out,"UTF-8"),addFormat);
     }
     catch (UnsupportedEncodingException x)
     { throw new RuntimeException(x);
     }
   }
   
-  public Context(Writer writer)
+  public Context(Writer writer,boolean addFormat)
   {
-    this.writer=new JsonWriter(writer);
+    this.writer=new JsonWriter(writer,addFormat);
   }
   
   public <T> void write(Channel<T> source)

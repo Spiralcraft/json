@@ -20,6 +20,13 @@ import spiralcraft.text.ParseException;
 import spiralcraft.text.ParsePosition;
 import spiralcraft.util.string.StringUtil;
 
+/**
+ * Writes JSON logical constructs driven by the ContentHandler interface
+ *   to a textual representation.
+ * 
+ * @author mike
+ *
+ */
 public class JsonWriter
  implements ContentHandler
 {
@@ -71,13 +78,15 @@ public class JsonWriter
   }
   
   private final java.io.Writer out;
+  private final boolean addFormat;
   private ParsePosition position;
-//  private int level=0;
   private String indent="";  
   private StackFrame currentFrame=new StackFrame(null);
   
-  public JsonWriter(java.io.Writer out)
-  { this.out=out;
+  public JsonWriter(java.io.Writer out,boolean addFormat)
+  { 
+    this.addFormat=addFormat;
+    this.out=out;
   }
   
   @Override
@@ -86,7 +95,9 @@ public class JsonWriter
     try
     {
       writeMember(name);
-      nextLine();
+      if (addFormat)
+      { nextLine();
+      }
       out.write("[");
       pushLevel();
     }
@@ -103,7 +114,9 @@ public class JsonWriter
     try
     {
       writeMember(name);
-      nextLine();
+      if (addFormat)
+      { nextLine();
+      }
       out.write("{");
       pushLevel();
     }
@@ -119,7 +132,9 @@ public class JsonWriter
     try
     { 
       popLevel();
-      nextLine();
+      if (addFormat)
+      { nextLine();
+      }
       out.write("]");
     }
     catch (IOException x)
@@ -134,7 +149,9 @@ public class JsonWriter
     try
     { 
       popLevel();
-      nextLine();
+      if (addFormat)
+      { nextLine();
+      }
       out.write("}");
     }
     catch (IOException x)
@@ -215,7 +232,9 @@ public class JsonWriter
     if (currentFrame.elementCount>0)
     { 
       out.write(",");
-      nextLine();      
+      if (addFormat)
+      { nextLine();
+      }
     }
     currentFrame.elementCount++;
     if (name!=null)
@@ -245,15 +264,15 @@ public class JsonWriter
   
   private void newLine()
     throws IOException
-  { 
-    out.write("\r\n");
+  { out.write("\r\n");
   }
 
   private void pushLevel()
     throws IOException
   { 
-//    level++;
-    indent=indent+"  ";
+    if (addFormat)
+    { indent=indent+"  ";
+    }
     currentFrame=new StackFrame(currentFrame);
     
   }
@@ -261,8 +280,9 @@ public class JsonWriter
   private void popLevel()
     throws IOException
   { 
-//    level--;
-    indent=indent.substring(0,indent.length()-2);
+    if (addFormat)
+    { indent=indent.substring(0,indent.length()-2);
+    }
     currentFrame=currentFrame.parent;
   }
 }

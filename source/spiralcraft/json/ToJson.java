@@ -31,9 +31,14 @@ public class ToJson<Tsource>
     =ClassLog.getInstance(ToJson.class);
   
   private boolean debug;
+  private boolean addFormat=true;
   
   public void setDebug(boolean debug)
   { this.debug=debug;
+  }
+  
+  public void setAddFormat(boolean addFormat)
+  { this.addFormat=addFormat;
   }
   
   @Override
@@ -104,6 +109,7 @@ public class ToJson<Tsource>
       {
         java.io.Writer jwriter=new StringWriter();
         DataWriter writer=new DataWriter();
+        writer.setAddFormat(addFormat);
       
         Tsource val=source.get();
         if (val!=null)

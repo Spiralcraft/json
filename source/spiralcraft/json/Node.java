@@ -55,11 +55,19 @@ public abstract class Node
     return tree.getRoot();
   }
   
+  /**
+   * Dump a representation of the node and children to JSON text
+   *   (used primarily for testing and debugging)
+   *   
+   * @param root
+   * @return
+   * @throws JsonException
+   */
   public static String formatToString(Node root)
     throws JsonException
   {
     StringWriter out=new StringWriter();
-    root.playEvents(new JsonWriter(out));
+    root.playEvents(new JsonWriter(out,true));
     return out.toString();
   }
     
