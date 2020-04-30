@@ -15,6 +15,30 @@
     <detail>
 
 
+      <scm:Change>
+        <revision>-dev16
+        </revision>
+
+        <notes>
+          <scm:Note>Add option to format JSON for readability
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>DataWriter.java
+          </URI>
+          <URI>JsonWriter.java
+          </URI>
+          <URI>Node.java
+          </URI>
+          <URI>ToJson.java
+          </URI>
+        </resources>
+
+      </scm:Change>
 
       <scm:Change>
         <revision>-dev15
