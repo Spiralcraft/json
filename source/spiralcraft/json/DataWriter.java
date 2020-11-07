@@ -29,6 +29,7 @@ import spiralcraft.text.ParseException;
 import spiralcraft.util.ArrayUtil;
 import spiralcraft.util.EmptyIterator;
 import spiralcraft.util.string.StringUtil;
+import spiralcraft.util.string.StringConverter;
 import spiralcraft.vfs.Resolver;
 import spiralcraft.vfs.Resource;
 
@@ -52,7 +53,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import java.net.URI;
-
+import java.util.HashMap;
 import java.util.Iterator;
 //import java.util.HashMap;
 
@@ -63,11 +64,16 @@ public class DataWriter
     =ClassLog.getInstance(DataWriter.class);
   protected static final Level debugLevel
     =ClassLog.getInitialDebugLevel(DataWriter.class, null);
+  protected HashMap<URI,StringConverter<?>> serializerMap;
   
   boolean addFormat;
   
   public void setAddFormat(boolean addFormat)
   { this.addFormat=addFormat;
+  }
+  
+  public void setSerializerMap(HashMap<URI,StringConverter<?>> map)
+  { this.serializerMap=map;
   }
   
   public <T> void writeToURI
@@ -104,7 +110,7 @@ public class DataWriter
     throws IOException,ContextualException
   { 
     try
-    { new Context(writer,addFormat).write(source);
+    { new Context(writer,addFormat,serializerMap).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -119,7 +125,7 @@ public class DataWriter
     throws IOException,ContextualException
   { 
     try
-    { new Context(writer,addFormat).write(reflector,data);
+    { new Context(writer,addFormat,serializerMap).write(reflector,data);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -133,7 +139,7 @@ public class DataWriter
     throws ContextualException
   {
     try
-    { new Context(out,addFormat).write(source);
+    { new Context(out,addFormat,serializerMap).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -159,9 +165,15 @@ class Context
 
   private final JsonWriter writer;
   private Frame currentFrame; 
+  private final HashMap<URI,StringConverter<?>> serializerMap;
   
-  public Context(OutputStream out,boolean addFormat)
+  public Context
+    (OutputStream out
+    ,boolean addFormat
+    ,HashMap<URI,StringConverter<?>> serializerMap
+    )
   { 
+    this.serializerMap=serializerMap;
     try
     { writer=new JsonWriter(new OutputStreamWriter(out,"UTF-8"),addFormat);
     }
@@ -170,8 +182,13 @@ class Context
     }
   }
   
-  public Context(Writer writer,boolean addFormat)
+  public Context
+    (Writer writer
+    ,boolean addFormat
+    ,HashMap<URI,StringConverter<?>> serializerMap
+    )
   {
+    this.serializerMap=serializerMap;
     this.writer=new JsonWriter(writer,addFormat);
   }
   
@@ -324,8 +341,23 @@ class Context
         else if (value instanceof Number)
         { writer.handleNumber(name,(Number) value);
         } 
+        else if (value instanceof String)
+        { writer.handleString(name, (String) value);
+        }
         else
-        { writer.handleString(name,type.toString(value));
+        { 
+          StringConverter converter=null;
+          if (serializerMap!=null)
+          { 
+            log.fine("Checking "+type.getURI());
+            converter=serializerMap.get(type.getURI());
+          }
+          if (converter!=null)
+          { writer.handleString(name,converter.toString(value));
+          }
+          else
+          { writer.handleString(name,type.toString(value));
+          }
         }
       }
       else
@@ -345,10 +377,22 @@ class Context
         else if (value instanceof Number)
         { writer.handleNumber(name,(Number) value);
         } 
+        else if (value instanceof String)
+        { writer.handleString(name, (String) value);
+        }
         else
         { 
-          if (reflector.getStringConverter()!=null)
-          { writer.handleString(name,reflector.getStringConverter().toString(value));
+          StringConverter converter=null;
+          if (serializerMap!=null)
+          { 
+            log.fine("Checking "+reflector.getTypeURI());
+            converter=serializerMap.get(reflector.getTypeURI());
+          }
+          if (converter==null)
+          { converter=reflector.getStringConverter();
+          }
+          if (converter!=null)
+          { writer.handleString(name,converter.toString(value));
           }
           else
           { writer.handleString(name,value.toString());

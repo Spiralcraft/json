@@ -4,6 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URI;
+import java.util.Date;
+import java.util.HashMap;
 
 import spiralcraft.common.callable.BinaryFunction;
 import spiralcraft.lang.AccessException;
@@ -18,6 +21,9 @@ import spiralcraft.lang.reflect.BeanReflector;
 import spiralcraft.lang.spi.SourcedChannel;
 import spiralcraft.lang.spi.ThreadLocalChannel;
 import spiralcraft.text.ParseException;
+import spiralcraft.util.refpool.URIPool;
+import spiralcraft.util.string.DateToString;
+import spiralcraft.util.string.StringConverter;
 
 public class FromJson<Ttarget,Tsource>
   implements ChannelFactory<Ttarget,Tsource>
@@ -31,6 +37,18 @@ public class FromJson<Ttarget,Tsource>
   private Reflector<Ttarget> resultType;
   private boolean ignoreUnrecognizedFields;
   private boolean debug;
+  private HashMap<URI,StringConverter<?>> serializerMap
+  =new HashMap<>();
+    { 
+      serializerMap.put
+        (BeanReflector.getInstance(Date.class).getTypeURI()
+        ,new DateToString("yyyy-MM-dd'T'HH:mm:ssXXX")
+        );
+      serializerMap.put
+        (URIPool.create("class:/spiralcraft/data/types/standard/Date")
+        ,new DateToString("yyyy-MM-dd'T'HH:mm:ssXXX")
+        );
+    }
   
   public FromJson(Reflector<Ttarget> resultType)
   { this.resultType=resultType;
@@ -171,6 +189,7 @@ public class FromJson<Ttarget,Tsource>
             (resultType
             ,constructor!=null?constructor.get():null
             );
+        reader.setSerializerMap(serializerMap);
         if (ignoreUnrecognizedFields)
         { reader.setIgnoreUnrecognizedFields(true);
         }

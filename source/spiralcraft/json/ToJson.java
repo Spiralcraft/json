@@ -2,6 +2,9 @@ package spiralcraft.json;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
+import java.util.Date;
+import java.util.HashMap;
 
 import spiralcraft.common.ContextualException;
 import spiralcraft.data.DataComposite;
@@ -20,6 +23,9 @@ import spiralcraft.lang.reflect.ArrayReflector;
 import spiralcraft.lang.reflect.BeanReflector;
 import spiralcraft.lang.spi.AbstractChannel;
 import spiralcraft.log.ClassLog;
+import spiralcraft.util.refpool.URIPool;
+import spiralcraft.util.string.DateToString;
+import spiralcraft.util.string.StringConverter;
 
 
 public class ToJson<Tsource>
@@ -32,6 +38,18 @@ public class ToJson<Tsource>
   
   private boolean debug;
   private boolean addFormat=true;
+  private HashMap<URI,StringConverter<?>> serializerMap
+    =new HashMap<>();
+  { 
+    serializerMap.put
+      (BeanReflector.getInstance(Date.class).getTypeURI()
+      ,new DateToString("yyyy-MM-dd'T'HH:mm:ssXXX")
+      );
+    serializerMap.put
+      (URIPool.create("class:/spiralcraft/data/types/standard/Date")
+      ,new DateToString("yyyy-MM-dd'T'HH:mm:ssXXX")
+      );
+  }
   
   public void setDebug(boolean debug)
   { this.debug=debug;
@@ -40,6 +58,7 @@ public class ToJson<Tsource>
   public void setAddFormat(boolean addFormat)
   { this.addFormat=addFormat;
   }
+  
   
   @Override
   public Channel<String> bindChannel
@@ -110,7 +129,8 @@ public class ToJson<Tsource>
         java.io.Writer jwriter=new StringWriter();
         DataWriter writer=new DataWriter();
         writer.setAddFormat(addFormat);
-      
+        writer.setSerializerMap(serializerMap);
+        
         Tsource val=source.get();
         if (val!=null)
         {

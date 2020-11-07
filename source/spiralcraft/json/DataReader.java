@@ -16,6 +16,8 @@ package spiralcraft.json;
 
 
 
+import java.net.URI;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -57,6 +59,8 @@ public class DataReader
   
 //  private boolean _started;
   private Focus<?> focus=new SimpleFocus<Void>(null);
+
+  protected HashMap<URI,StringConverter<?>> serializerMap;
   
   public static DataReader createReader(DataComposite root)
     throws ContextualException
@@ -74,6 +78,10 @@ public class DataReader
     this._currentFrame=new RootFrame();
     this._root=root;
     this._rootReflector=rootReflector;
+  }
+
+  public void setSerializerMap(HashMap<URI,StringConverter<?>> map)
+  { this.serializerMap=map;
   }
   
   public void setIgnoreUnrecognizedFields(boolean ignore)
@@ -481,7 +489,12 @@ public class DataReader
         { throw new BindException("Not a collection "+reflector.getTypeURI());
         }
         collection=new LinkedList<Object>();
-        converter=decorator.getComponentReflector().getStringConverter();
+        if (serializerMap!=null)
+        { converter=serializerMap.get(decorator.getComponentReflector().getTypeURI());
+        }
+        if (converter==null)
+        { converter=decorator.getComponentReflector().getStringConverter();
+        }
       }
     }
     
@@ -585,7 +598,13 @@ public class DataReader
           }
           else
           {
-            StringConverter<?> converter=prop.getReflector().getStringConverter();
+            StringConverter<?> converter=null;
+            if (serializerMap!=null)
+            { converter=serializerMap.get(prop.getReflector().getTypeURI());
+            }
+            if (converter==null)
+            { converter=prop.getReflector().getStringConverter();
+            }
             if (converter!=null)
             { prop.set(converter.fromString(value.toString()));
             }
