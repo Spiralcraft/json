@@ -14,7 +14,34 @@
     
     <detail>
 
+      
+      <scm:Change>
+        <revision>-dev18
+        </revision>
 
+        <notes>
+          <scm:Note>Add serializerMap to map custom serializers to property types
+          </scm:Note>
+          <scm:Note>Serialize dates in ISO8601 form
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>DataWriter.java
+          </URI>
+          <URI>ToJson.java
+          </URI>
+          <URI>DataReader.java
+          </URI>
+          <URI>FromJson.java
+          </URI>
+        </resources>
+
+      </scm:Change>
+      
       <scm:Change>
         <revision>-dev16
         </revision>
