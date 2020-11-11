@@ -349,7 +349,9 @@ class Context
           StringConverter converter=null;
           if (serializerMap!=null)
           { 
-            log.fine("Checking "+type.getURI());
+            if (logLevel.isFine())
+            { log.fine("Checking "+type.getURI());
+            }
             converter=serializerMap.get(type.getURI());
           }
           if (converter!=null)
@@ -385,7 +387,9 @@ class Context
           StringConverter converter=null;
           if (serializerMap!=null)
           { 
-            log.fine("Checking "+reflector.getTypeURI());
+            if (logLevel.isFine())
+            { log.fine("Checking "+reflector.getTypeURI());
+            }
             converter=serializerMap.get(reflector.getTypeURI());
           }
           if (converter==null)
@@ -741,7 +745,6 @@ class Context
             if (logLevel.isFine())
             { log.fine("Writing untyped Tuple "+tuple.getFieldSet());
             }
-            log.fine("Writing untyped tuple "+tuple.getFieldSet());
             fieldIterator=tuple.getFieldSet().fieldIterable().iterator();
           }
         }
@@ -852,7 +855,7 @@ class Context
           =reflector.getProperties(data)
             .iterator();
         if (!fieldIterator.hasNext())
-        { log.fine("NO PROPS: "+reflector+" : "+data.get());
+        { log.info("NO PROPS: "+reflector+" : "+data.get());
         }
         
       }
