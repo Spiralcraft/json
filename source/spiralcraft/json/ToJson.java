@@ -1,12 +1,16 @@
 package spiralcraft.json;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import spiralcraft.common.ContextualException;
+import spiralcraft.common.callable.BinaryFunction;
 import spiralcraft.data.DataComposite;
 import spiralcraft.data.DataException;
 import spiralcraft.data.lang.DataReflector;
@@ -22,6 +26,7 @@ import spiralcraft.lang.parser.StructNode.StructReflector;
 import spiralcraft.lang.reflect.ArrayReflector;
 import spiralcraft.lang.reflect.BeanReflector;
 import spiralcraft.lang.spi.AbstractChannel;
+import spiralcraft.lang.spi.ThreadLocalChannel;
 import spiralcraft.log.ClassLog;
 import spiralcraft.util.refpool.URIPool;
 import spiralcraft.util.string.DateToString;
@@ -36,6 +41,7 @@ public class ToJson<Tsource>
   private static final ClassLog log
     =ClassLog.getInstance(ToJson.class);
   
+  private boolean pojoMode;
   private boolean debug;
   private boolean addFormat=true;
   private HashMap<URI,StringConverter<?>> serializerMap
@@ -51,6 +57,12 @@ public class ToJson<Tsource>
       );
   }
   
+  private HashSet<URI> excludes=new HashSet<>();
+  { excludes.add(URIPool.create("class:/spiralcraft/data/types/standard/Class"));
+  }
+  
+  private Reflector<Tsource> inputR;
+  
   public void setDebug(boolean debug)
   { this.debug=debug;
   }
@@ -59,6 +71,55 @@ public class ToJson<Tsource>
   { this.addFormat=addFormat;
   }
   
+  
+  public ToJson()
+  {
+  }
+  
+  public ToJson(Class<Tsource> clazz)
+  { 
+    this(BeanReflector.<Tsource>getInstance(clazz));
+    this.pojoMode=true;
+  }
+  
+  public ToJson(Reflector<Tsource> inputR)
+  { this.inputR=inputR;
+  }
+  
+  public BinaryFunction<OutputStream,Tsource,Integer,IOException> getOutputStreamFn()
+    throws BindException
+  {
+    return new BinaryFunction<OutputStream,Tsource,Integer,IOException>()
+        {
+          final ThreadLocalChannel<Tsource> inputChannel
+            =new ThreadLocalChannel<Tsource>
+              (inputR);
+          
+          final Channel<String> output = new ToJsonChannel(inputChannel);
+
+          @Override
+          public Integer evaluate(
+            OutputStream out,
+            Tsource sourceVal)
+            throws IOException
+          { 
+            inputChannel.push(sourceVal);
+            String result;
+            try
+            { 
+              result=output.get();
+              byte[] outB=result.getBytes(StandardCharsets.UTF_8);
+              out.write(outB);
+              return outB.length;
+              
+            }
+            finally
+            { inputChannel.pop();
+            }
+            
+          }
+        };
+  }
   
   @Override
   public Channel<String> bindChannel
@@ -130,6 +191,7 @@ public class ToJson<Tsource>
         DataWriter writer=new DataWriter();
         writer.setAddFormat(addFormat);
         writer.setSerializerMap(serializerMap);
+        writer.setExcludes(excludes);
         
         Tsource val=source.get();
         if (val!=null)

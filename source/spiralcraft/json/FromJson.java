@@ -1,6 +1,7 @@
 package spiralcraft.json;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
@@ -32,6 +33,7 @@ public class FromJson<Ttarget,Tsource>
   static enum InputType
   { BYTEARRAY
     ,STRING
+    ,BINARY_STREAM
   }
   
   private Reflector<Ttarget> resultType;
@@ -49,6 +51,10 @@ public class FromJson<Ttarget,Tsource>
         ,new DateToString("yyyy-MM-dd'T'HH:mm:ssXXX")
         );
     }
+  
+  public FromJson(Class<Ttarget> clazz)
+  { this(BeanReflector.<Ttarget>getInstance(clazz));
+  }
   
   public FromJson(Reflector<Ttarget> resultType)
   { this.resultType=resultType;
@@ -86,6 +92,12 @@ public class FromJson<Ttarget,Tsource>
   { return (BinaryFunction) getFn((Reflector<Tsource>) BeanReflector.getInstance(String.class));
   }
     
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  public BinaryFunction<InputStream,Ttarget,Ttarget,ParseException> getInputStreamFn()
+    throws BindException
+  { return (BinaryFunction) getFn((Reflector<Tsource>) BeanReflector.getInstance(InputStream.class));
+  }
+
   private BinaryFunction<Tsource,Ttarget,Ttarget,ParseException> getFn(final Reflector<Tsource> inputR)
     throws BindException
   {
@@ -155,6 +167,9 @@ public class FromJson<Ttarget,Tsource>
       else if (source.getContentType()==String.class)
       { inputType=InputType.STRING;
       }
+      else if (source.getContentType()==InputStream.class)
+      { inputType=InputType.BINARY_STREAM;
+      }
       else
       { 
         throw new BindException
@@ -177,6 +192,9 @@ public class FromJson<Ttarget,Tsource>
           break;
         case BYTEARRAY:
           input=new InputStreamReader(new ByteArrayInputStream((byte[]) source.get()));
+          break;
+        case BINARY_STREAM:
+          input=new InputStreamReader((InputStream) source.get());
           break;
         default:
           throw new AccessException("Unrecognized input type "+inputType);

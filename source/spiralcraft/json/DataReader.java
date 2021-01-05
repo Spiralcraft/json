@@ -667,8 +667,15 @@ public class DataReader
     { 
       if (value==null)
       {
-        Channel<T> constructor
-          =LangUtil.constructorFor(reflector,new SimpleFocus<Void>(null));
+        Channel<T> constructor=null;
+        try
+        {
+          constructor
+            =LangUtil.constructorFor(reflector,new SimpleFocus<Void>(null));
+        }
+        catch (Exception x)
+        { log.info("No constructor for "+reflector);
+        }
          
         if (constructor!=null)
         { value=constructor.get();

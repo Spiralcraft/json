@@ -54,6 +54,7 @@ import java.io.Writer;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 //import java.util.HashMap;
 
@@ -65,6 +66,7 @@ public class DataWriter
   protected static final Level debugLevel
     =ClassLog.getInitialDebugLevel(DataWriter.class, null);
   protected HashMap<URI,StringConverter<?>> serializerMap;
+  protected HashSet<URI> excludes;
   
   boolean addFormat;
   
@@ -74,6 +76,10 @@ public class DataWriter
   
   public void setSerializerMap(HashMap<URI,StringConverter<?>> map)
   { this.serializerMap=map;
+  }
+
+  public void setExcludes(HashSet<URI> excludes)
+  { this.excludes=excludes;
   }
   
   public <T> void writeToURI
@@ -110,7 +116,7 @@ public class DataWriter
     throws IOException,ContextualException
   { 
     try
-    { new Context(writer,addFormat,serializerMap).write(source);
+    { new Context(writer,addFormat,serializerMap,excludes).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -125,7 +131,7 @@ public class DataWriter
     throws IOException,ContextualException
   { 
     try
-    { new Context(writer,addFormat,serializerMap).write(reflector,data);
+    { new Context(writer,addFormat,serializerMap,excludes).write(reflector,data);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -139,7 +145,7 @@ public class DataWriter
     throws ContextualException
   {
     try
-    { new Context(out,addFormat,serializerMap).write(source);
+    { new Context(out,addFormat,serializerMap,excludes).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -162,18 +168,20 @@ class Context
 
 //  private static final URI STANDARD_NAMESPACE_URI
 //    =URI.create("class:/spiralcraft/data/types/standard/");
-
   private final JsonWriter writer;
   private Frame currentFrame; 
   private final HashMap<URI,StringConverter<?>> serializerMap;
+  private final HashSet<URI> excludes;
   
   public Context
     (OutputStream out
     ,boolean addFormat
     ,HashMap<URI,StringConverter<?>> serializerMap
+    ,HashSet<URI> excludes
     )
   { 
     this.serializerMap=serializerMap;
+    this.excludes=excludes;
     try
     { writer=new JsonWriter(new OutputStreamWriter(out,"UTF-8"),addFormat);
     }
@@ -186,9 +194,11 @@ class Context
     (Writer writer
     ,boolean addFormat
     ,HashMap<URI,StringConverter<?>> serializerMap
+    ,HashSet<URI> excludes
     )
   {
     this.serializerMap=serializerMap;
+    this.excludes=excludes;
     this.writer=new JsonWriter(writer,addFormat);
   }
   
@@ -753,18 +763,22 @@ class Context
       {
         
         Field field=fieldIterator.next();
-        if (logLevel.isFine())
-        { log.fine("Starting field "+field.getURI());
-        }
-        if (field.getValue(tuple)!=null)
-        {
-          empty=false;
-          if (field.getType().isAggregate())
-          { currentFrame=new AggregateFieldFrame(tuple,field);
+        if (!excludes.contains(field.getType().getURI()))
+        { 
+          if (logLevel.isFine())
+          { log.fine("Starting field "+field.getURI());
           }
-          else
-          { currentFrame=new SimpleFieldFrame(tuple,field);
+          if (field.getValue(tuple)!=null)
+          {
+            empty=false;
+            if (field.getType().isAggregate())
+            { currentFrame=new AggregateFieldFrame(tuple,field);
+            }
+            else
+            { currentFrame=new SimpleFieldFrame(tuple,field);
+            }
           }
+
         }
       }
       else
