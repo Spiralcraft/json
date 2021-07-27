@@ -15,6 +15,25 @@
     <detail>
 
       <scm:Change>
+        <revision>-dev21
+        </revision>
+
+        <notes>
+          <scm:Note>Fix error parsing empty objects
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>Parser.java
+          </URI>
+        </resources>
+
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev20
         </revision>
 

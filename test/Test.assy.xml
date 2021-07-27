@@ -368,6 +368,29 @@
         </test:Assertion>
 
         <test:Assertion>
+          <name>Empty object input
+          </name>
+        
+          <subjectX>
+            "{ name: \"test\", postalAddress: {} }"
+            .[*json:FromJson
+                { 
+                   
+                  { name:[@j:String]
+                  , postalAddress:={ city:="" }
+                  }.@type
+            
+                }
+              ]
+            
+            
+          </subjectX>
+          
+          <testX>.name=="test"
+          </testX>
+        </test:Assertion>
+        
+        <test:Assertion>
           <name>CR Escape
           </name>
         
