@@ -22,15 +22,17 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-//import spiralcraft.log.ClassLog;
+import spiralcraft.log.ClassLog;
 import spiralcraft.text.LookaheadParserContext;
 import spiralcraft.text.ParseException;
 import spiralcraft.util.string.StringUtil;
 
 public class Parser
 {
-//  private static final ClassLog log
-//    =ClassLog.getInstance(Parser.class);
+  private static final boolean DEBUG=false;
+  
+  private static final ClassLog log
+    =DEBUG?ClassLog.getInstance(Parser.class):null;
   
   private static final int TT_WORD=-1;
   private static final int TT_EOF=-2;
@@ -106,11 +108,13 @@ public class Parser
   {
     nextToken();
     handler.openObject(name);
-    if (context.getCurrentChar()!='}')
+    if (charToken!='}')
     {
       while (true)
       { 
-        // log.fine("["+context.getCurrentChar()+"]:["+charToken+"]:["+stringToken+"]");
+        if (DEBUG)
+        { log.fine("["+context.getCurrentChar()+"]:["+charToken+"]:["+stringToken+"]");
+        }
         parseMember();
 
         if (charToken!=',')
@@ -310,7 +314,11 @@ public class Parser
     throws ParseException
   { 
     if (stringToken==null)
-    { throwUnexpected("Expected member name");
+    { 
+      if (DEBUG)
+      { log.fine("TokenString="+this.tokenString());
+      }
+      throwUnexpected("Expected member name");
     }
     String name=stringToken;
     // log.fine("Member name="+stringToken);
