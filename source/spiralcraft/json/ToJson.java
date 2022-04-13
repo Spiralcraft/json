@@ -41,7 +41,7 @@ public class ToJson<Tsource>
   private static final ClassLog log
     =ClassLog.getInstance(ToJson.class);
   
-  private boolean pojoMode;
+  // private boolean pojoMode;
   private boolean debug;
   private boolean addFormat=true;
   private HashMap<URI,StringConverter<?>> serializerMap
@@ -79,7 +79,7 @@ public class ToJson<Tsource>
   public ToJson(Class<Tsource> clazz)
   { 
     this(BeanReflector.<Tsource>getInstance(clazz));
-    this.pojoMode=true;
+    // this.pojoMode=true;
   }
   
   public ToJson(Reflector<Tsource> inputR)
