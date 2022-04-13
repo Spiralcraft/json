@@ -15,6 +15,26 @@
     <detail>
 
       <scm:Change>
+        <revision>-dev22
+        </revision>
+
+        <notes>
+          <scm:Note>Write value correctly where formal type is an undifferentiated
+            java.lang.Number
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>DataWriter.jave
+          </URI>
+        </resources>
+
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev21
         </revision>
 
