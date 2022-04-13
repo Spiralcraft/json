@@ -277,6 +277,7 @@ class Context
     }
     else if (reflector.getStringConverter()!=null
              || reflector.getContentType()==String.class
+             || data instanceof Number
              )
     { return new ValueFrame(reflector,memberName,data,false);
     }
