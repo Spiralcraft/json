@@ -54,7 +54,7 @@ public class DataReader
   private Frame<?> _currentFrame;
   private ParsePosition position=new ParsePosition();
   
-  private boolean ignoreUnrecognizedFields;
+  private InputOptions inputOptions;
   private boolean debug;
   
 //  private boolean _started;
@@ -84,8 +84,8 @@ public class DataReader
   { this.serializerMap=map;
   }
   
-  public void setIgnoreUnrecognizedFields(boolean ignore)
-  { this.ignoreUnrecognizedFields=ignore;
+  public void setInputOptions(InputOptions p)
+  { this.inputOptions=p;
   }
 
   void setDebug(boolean debug)
@@ -172,17 +172,17 @@ public class DataReader
   protected String mapName(String name)
   {
     int i=-1;
-    while ( (i=name.indexOf('_')) >=0)
-    { 
-      name=name.substring(0,i)
-        +Character.toUpperCase(name.charAt(i+1))
-        +name.substring(i+2);
-    }
-    while ( (i=name.indexOf('-')) >=0)
-    { 
-      name=name.substring(0,i)
-        +Character.toUpperCase(name.charAt(i+1))
-        +name.substring(i+2);
+    if (inputOptions.camelCaseSeparators!=null)
+    {
+      for (char sep: inputOptions.camelCaseSeparators)
+      {
+        while ( (i=name.indexOf(sep)) >=0)
+        { 
+          name=name.substring(0,i)
+            +Character.toUpperCase(name.charAt(i+1))
+            +name.substring(i+2);
+        }
+      }
     }
     while ( (i=name.indexOf('~')) >=0)
     { 
@@ -637,7 +637,7 @@ public class DataReader
       }
       catch (ContextualException x)
       { 
-        if (!ignoreUnrecognizedFields)
+        if (!inputOptions.ignoreUnrecognizedFields)
         { throw x;
         }
         else

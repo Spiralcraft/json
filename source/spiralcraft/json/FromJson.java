@@ -3,6 +3,7 @@ package spiralcraft.json;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
@@ -21,6 +22,7 @@ import spiralcraft.lang.parser.Struct;
 import spiralcraft.lang.reflect.BeanReflector;
 import spiralcraft.lang.spi.SourcedChannel;
 import spiralcraft.lang.spi.ThreadLocalChannel;
+import spiralcraft.log.Level;
 import spiralcraft.text.ParseException;
 import spiralcraft.util.refpool.URIPool;
 import spiralcraft.util.string.DateToString;
@@ -37,7 +39,6 @@ public class FromJson<Ttarget,Tsource>
   }
   
   private Reflector<Ttarget> resultType;
-  private boolean ignoreUnrecognizedFields;
   private boolean debug;
   private HashMap<URI,StringConverter<?>> serializerMap
   =new HashMap<>();
@@ -51,6 +52,16 @@ public class FromJson<Ttarget,Tsource>
         ,new DateToString("yyyy-MM-dd'T'HH:mm:ssXXX")
         );
     }
+  
+  private InputOptions inputOptions = new InputOptions();
+  
+  public InputOptions getInputOptions()
+  { return inputOptions;
+  }
+  
+  public void setInputOptions(InputOptions p)
+  { this.inputOptions=p;
+  }
   
   public FromJson(Class<Ttarget> clazz)
   { this(BeanReflector.<Ttarget>getInstance(clazz));
@@ -76,7 +87,7 @@ public class FromJson<Ttarget,Tsource>
   }
   
   public void setIgnoreUnrecognizedFields(boolean ignoreUnrecognizedFields)
-  { this.ignoreUnrecognizedFields=ignoreUnrecognizedFields;
+  { this.inputOptions.ignoreUnrecognizedFields=ignoreUnrecognizedFields;
   }
   
   
@@ -184,41 +195,55 @@ public class FromJson<Ttarget,Tsource>
     @Override
     protected Ttarget retrieve()
     {
-      Reader input;
-      switch (inputType)
-      {
-        case STRING:
-          input=new StringReader((String) source.get());
-          break;
-        case BYTEARRAY:
-          input=new InputStreamReader(new ByteArrayInputStream((byte[]) source.get()));
-          break;
-        case BINARY_STREAM:
-          input=new InputStreamReader((InputStream) source.get());
-          break;
-        default:
-          throw new AccessException("Unrecognized input type "+inputType);
-      }
-      
+      Reader input=null;
       try
       {
-        DataReader reader
-          =new DataReader
-            (resultType
-            ,constructor!=null?constructor.get():null
-            );
-        reader.setSerializerMap(serializerMap);
-        if (ignoreUnrecognizedFields)
-        { reader.setIgnoreUnrecognizedFields(true);
+        switch (inputType)
+        {
+          case STRING:
+            input=new StringReader((String) source.get());
+            break;
+          case BYTEARRAY:
+            input=new InputStreamReader(new ByteArrayInputStream((byte[]) source.get()));
+            break;
+          case BINARY_STREAM:
+            input=new InputStreamReader((InputStream) source.get());
+            break;
+          default:
+            throw new AccessException("Unrecognized input type "+inputType);
         }
-        reader.setDebug(FromJson.this.debug);
-        Parser parser=new Parser(input,reader);
-        parser.parse();
-        return (Ttarget) reader.getValue();
+        
+        try
+        {
+          DataReader reader
+            =new DataReader
+              (resultType
+              ,constructor!=null?constructor.get():null
+              );
+          reader.setSerializerMap(serializerMap);
+          reader.setInputOptions(inputOptions);
+          reader.setDebug(FromJson.this.debug);
+          Parser parser=new Parser(input,reader);
+          parser.parse();
+          return (Ttarget) reader.getValue();
+        }
+        catch (ParseException x)
+        { throw new AccessException(new JsonException("Error parsing input",x));
+        }
       }
-      catch (ParseException x)
-      { throw new AccessException(new JsonException("Error parsing input",x));
+      finally
+      {
+        if (input!=null)
+        { 
+          try
+          { input.close();
+          }
+          catch (IOException x)
+          { log.log(Level.INFO,"Closing JSON stream threw exception",x); 
+          }
+        }
       }
+
     }
 
     @Override
