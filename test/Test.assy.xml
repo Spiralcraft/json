@@ -333,8 +333,7 @@
           </subjectX>
           
           <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
-{"class" :  "spiralcraft.lang.test.Bar",
-  "theArray" :  
+{"theArray" :  
   ["one",
     "two",
     "three"
