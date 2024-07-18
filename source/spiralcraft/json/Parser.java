@@ -451,7 +451,7 @@ public class Parser
   {
 
     
-    while (isWhitespace(context.getCurrentChar()))
+    while (!context.isEof() && isWhitespace(context.getCurrentChar()))
     { context.advance();
     }
     
