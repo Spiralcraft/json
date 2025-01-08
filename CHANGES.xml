@@ -15,6 +15,29 @@
     <detail>
 
       <scm:Change>
+        <revision>-dev23
+        </revision>
+
+        <notes>
+          <scm:Note>Enhance configurability by using InputOptions object
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>DataReader.jave
+          </URI>
+          <URI>FromJson.jave
+          </URI>
+          <URI>InputOptions.java
+          </URI>
+        </resources>
+
+      </scm:Change>
+
+      <scm:Change>
         <revision>-dev22
         </revision>
 
