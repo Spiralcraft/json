@@ -71,12 +71,17 @@ public class FromJson<Ttarget,Tsource>
   { this.resultType=resultType;
   }
 
+  /**
+   * Convenience method to read a single struct from a JSON file
+   * 
+   * @param struct
+   */
   @SuppressWarnings("unchecked")
   public FromJson(Struct struct)
   {
     resultType=(Reflector<Ttarget>) struct.getReflector();
   }
-
+  
   /**
    * Log information as types are mapped and data is read
    * 
