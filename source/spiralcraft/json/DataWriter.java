@@ -172,7 +172,8 @@ class Context
   private Frame currentFrame; 
   private final HashMap<URI,StringConverter<?>> serializerMap;
   private final HashSet<URI> excludes;
-  
+  private MemberNames memberNames=MemberNames.DEFAULT;
+
   public Context
     (OutputStream out
     ,boolean addFormat
@@ -288,6 +289,11 @@ class Context
     
     
   }
+  
+  private String jsonName(String name)
+  { return name==null?null:memberNames.toMember(name);
+  }
+  
   
   /**
    * Holder for an element of the data tree
@@ -439,7 +445,7 @@ class Context
     public GenericFrame(Reflector<T> reflector,String memberName)
     { 
       this.reflector=reflector;
-      this.memberName=memberName;
+      this.memberName=jsonName(memberName);
     }
     
     protected final void startType()
@@ -1018,7 +1024,7 @@ class Context
       {
         opened=true;
         openField();
-        writer.openArray(field.getName());
+        writer.openArray(jsonName(field.getName()));
         if (value.getClass().isArray())
         { iterator=ArrayUtil.primitiveArrayIterator(value);
         }
@@ -1039,7 +1045,7 @@ class Context
       }
       else
       {
-        writer.closeArray(field.getName());
+        writer.closeArray(jsonName(field.getName()));
         closeField(hasOne);
         finish();
         return;

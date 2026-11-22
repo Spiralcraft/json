@@ -61,6 +61,7 @@ public class DataReader
   private Focus<?> focus=new SimpleFocus<Void>(null);
 
   protected HashMap<URI,StringConverter<?>> serializerMap;
+  protected MemberNames memberNames=MemberNames.DEFAULT;
   
   public static DataReader createReader(DataComposite root)
     throws ContextualException
@@ -171,6 +172,9 @@ public class DataReader
   
   protected String mapName(String name)
   {
+  
+    name=memberNames.toMember(name);
+  
     int i=-1;
     if (inputOptions.camelCaseSeparators!=null)
     {
