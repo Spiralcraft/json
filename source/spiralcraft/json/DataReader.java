@@ -172,9 +172,6 @@ public class DataReader
   
   protected String mapName(String name)
   {
-  
-    name=memberNames.toMember(name);
-  
     int i=-1;
     if (inputOptions.camelCaseSeparators!=null)
     {
@@ -194,7 +191,9 @@ public class DataReader
         +"_"
         +(i<name.length()?name.substring(i+1):"");
     }
-    return name;
+
+    // After the camelCase step, which would rewrite the "__" of an escape
+    return memberNames.toIdentifier(name);
   }
 
   class Frame<T>
