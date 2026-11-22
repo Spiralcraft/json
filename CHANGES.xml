@@ -15,6 +15,31 @@
     <detail>
 
       <scm:Change>
+        <revision>-dev24
+        </revision>
+
+        <notes>
+          <scm:Note>Add rules for representing legal JSON as Java and 
+             spiralcraft.lang identifiers
+          </scm:Note>
+        </notes>
+        
+        <path>source/spiralcraft/json
+        </path>
+        
+        <resources>
+          <URI>DataReader.java
+          </URI>
+          <URI>DataWriter.java
+          </URI>
+          <URI>MemberNames.java
+          </URI>
+        </resources>
+
+      </scm:Change>
+
+
+      <scm:Change>
         <revision>-dev23
         </revision>
 
