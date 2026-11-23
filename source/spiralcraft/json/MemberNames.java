@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import spiralcraft.util.string.IdentifierConverter;
+
 /**
  * Lossless translation between JSON member names and Spiralcraft identifiers.
  *
@@ -15,6 +17,11 @@ import java.util.Map;
  * "__code__", where code is one or more lowercase letters. The sequence "__"
  * is itself reserved: a literal "__" in a JSON name is written as "__us__".
  * Single underscores are never special.
+ *
+ * An instance can wrap an IdentifierConverter, such as a
+ *   CamelSnakeConverter: on the way in, the wrapped converter runs first and
+ *   the escapes last; on the way out, the escapes are undone first and the
+ *   wrapped converter runs last.
  *
  * Instances are immutable and thread-safe.
  */
@@ -31,12 +38,24 @@ public final class MemberNames
   private final Map<String,String> codeBySymbol;
   private final Map<String,String> symbolByCode;
   private final String firstChars;              // fast-path test for encode
+  private final IdentifierConverter wrapped;    // may be null
 
   /**
    * @param symbolToCode literal text -> code (lowercase letters only)
    */
   public MemberNames(Map<String,String> symbolToCode)
+  { this(symbolToCode,null);
+  }
+
+  /**
+   * @param symbolToCode literal text -> code (lowercase letters only)
+   * @param wrapped a converter applied before the escapes on the way in
+   *   and after them on the way out, or null for none
+   */
+  public MemberNames
+    (Map<String,String> symbolToCode,IdentifierConverter wrapped)
   {
+    this.wrapped=wrapped;
     codeBySymbol=new LinkedHashMap<String,String>();
     symbolByCode=new HashMap<String,String>();
     StringBuilder first=new StringBuilder("_");
@@ -81,9 +100,28 @@ public final class MemberNames
     firstChars=first.toString();
   }
 
+  private MemberNames(MemberNames base,IdentifierConverter wrapped)
+  {
+    this.symbols=base.symbols;
+    this.codeBySymbol=base.codeBySymbol;
+    this.symbolByCode=base.symbolByCode;
+    this.firstChars=base.firstChars;
+    this.wrapped=wrapped;
+  }
+
+  /**
+   * The same symbols, wrapping the given converter (null for none)
+   */
+  public MemberNames wrap(IdentifierConverter wrapped)
+  { return new MemberNames(this,wrapped);
+  }
+
   /** JSON member name -> Spiralcraft identifier (reader side) */
   public String toIdentifier(String member)
   {
+    if (wrapped!=null)
+    { member=wrapped.toIn(member);
+    }
     if (!needsEncoding(member))
     { return member;
     }
@@ -116,6 +154,12 @@ public final class MemberNames
 
   /** Spiralcraft identifier -> JSON member name (writer side) */
   public String toMember(String identifier)
+  {
+    String member=unescape(identifier);
+    return wrapped!=null?wrapped.toOut(member):member;
+  }
+
+  private String unescape(String identifier)
   {
     if (identifier.indexOf(ESCAPE)<0)
     { return identifier;

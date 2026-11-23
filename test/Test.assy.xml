@@ -448,6 +448,123 @@
           
         </test:Assertion>        
 
+        <test:Assertion>
+          <name>MemberNames toIdentifier @meta
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.toIdentifier("@meta")
+          </subjectX>
+          <testX>.=="__at__meta"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames toMember __at__meta
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.toMember("__at__meta")
+          </subjectX>
+          <testX>.=="@meta"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames toIdentifier a__b
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.toIdentifier("a__b")
+          </subjectX>
+          <testX>.=="a__us__b"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames toMember a__us__b
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.toMember("a__us__b")
+          </subjectX>
+          <testX>.=="a__b"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames leaves tool_call_id
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.toIdentifier("tool_call_id")
+          </subjectX>
+          <testX>.=="tool_call_id"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames wrapping CamelSnake toIdentifier @meta
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.wrap([@sutil:CamelSnakeConverter].@INSTANCE).toIdentifier("@meta")
+          </subjectX>
+          <testX>.=="__at__meta"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames wrapping CamelSnake toMember __at__meta
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.wrap([@sutil:CamelSnakeConverter].@INSTANCE).toMember("__at__meta")
+          </subjectX>
+          <testX>.=="@meta"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames wrapping CamelSnake toIdentifier tool_call_id
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.wrap([@sutil:CamelSnakeConverter].@INSTANCE).toIdentifier("tool_call_id")
+          </subjectX>
+          <testX>.=="toolCallId"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames wrapping CamelSnake toMember toolCallId
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.wrap([@sutil:CamelSnakeConverter].@INSTANCE).toMember("toolCallId")
+          </subjectX>
+          <testX>.=="tool_call_id"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames wrapping CamelSnake toIdentifier a__b
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.wrap([@sutil:CamelSnakeConverter].@INSTANCE).toIdentifier("a__b")
+          </subjectX>
+          <testX>.=="a__us__b"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames wrapping CamelSnake toMember a__us__b
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.wrap([@sutil:CamelSnakeConverter].@INSTANCE).toMember("a__us__b")
+          </subjectX>
+          <testX>.=="a__b"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames wrapping CamelSnake toIdentifier role
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.wrap([@sutil:CamelSnakeConverter].@INSTANCE).toIdentifier("role")
+          </subjectX>
+          <testX>.=="role"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>MemberNames wrapping CamelSnake toMember role
+          </name>
+          <subjectX>[@json:MemberNames].@DEFAULT.wrap([@sutil:CamelSnakeConverter].@INSTANCE).toMember("role")
+          </subjectX>
+          <testX>.=="role"
+          </testX>
+        </test:Assertion>
+
       </scenarios>
     </task:Sequence>
   </chain>
