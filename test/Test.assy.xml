@@ -823,6 +823,96 @@
           </testX>
         </test:Assertion>
 
+        <test:Assertion>
+          <name>DataWriter writes List of Item items by their class
+          </name>
+          <subjectX>[@jt:ListDto].@write()
+          </subjectX>
+          <testX>.contains("\"items\" :  [{\"name\" :  \"i1\"},{\"name\" :  \"i2\",\"rank\" :  2}]")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes List of String items
+          </name>
+          <subjectX>[@jt:ListDto].@write()
+          </subjectX>
+          <testX>.contains("\"names\" :  [\"a\",\"b\"]")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes a List of mixed items by each item's class
+          </name>
+          <subjectX>[@jt:ListDto].@write()
+          </subjectX>
+          <testX>.contains("\"mixed\" :  [\"x\",7,{\"name\" :  \"m\"},null]")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes subclass instances in an array by their class
+          </name>
+          <subjectX>[@jt:ListDto].@write()
+          </subjectX>
+          <testX>.contains("\"itemArray\" :  [{\"name\" :  \"s\",\"rank\" :  3},{\"name\" :  \"t\"}]")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes a primitive array as before
+          </name>
+          <subjectX>[@jt:ListDto].@write()
+          </subjectX>
+          <testX>.contains("\"ints\" :  [1,2]")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes Boolean, Character and enum items as values
+          </name>
+          <subjectX>[@jt:ListDto].@write()
+          </subjectX>
+          <testX>.contains("\"scalars\" :  [true,\"c\",\"GREEN\"]")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes a root list by the class of each item
+          </name>
+          <subjectX>[@jt:ListDto].@writeRoot()
+          </subjectX>
+          <testX>.contains("[{\"name\" :  \"r\"},{\"name\" :  \"q\",\"rank\" :  1},\"s\"]")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes an empty list and a list inside a list
+          </name>
+          <subjectX>[@jt:ListDto].@write()
+          </subjectX>
+          <testX>.contains("\"empty\" :  [],")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes a list inside a list by item class
+          </name>
+          <subjectX>[@jt:ListDto].@write()
+          </subjectX>
+          <testX>.contains("\"nested\" :  [[{\"name\" :  \"n\"}]]")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson renderAsIs writes list items by their class
+          </name>
+          <subjectX>[@jt:ListDto].().[*json:ToJson{ renderAsIs:=true }]
+          </subjectX>
+          <testX>.replace("\r","").replace("\n","").replace(" ","").contains("\"items\":[{\"name\":\"i1\"},{\"name\":\"i2\",\"rank\":2}]")
+          </testX>
+        </test:Assertion>
+
       </scenarios>
     </task:Sequence>
   </chain>

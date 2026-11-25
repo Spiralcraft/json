@@ -39,6 +39,7 @@ import spiralcraft.lang.Channel;
 import spiralcraft.lang.IterationCursor;
 import spiralcraft.lang.IterationDecorator;
 import spiralcraft.lang.Reflector;
+import spiralcraft.lang.reflect.BeanReflector;
 import spiralcraft.lang.Signature;
 import spiralcraft.lang.SimpleFocus;
 import spiralcraft.lang.parser.Struct;
@@ -1073,6 +1074,32 @@ class Context
     }
   
   
+    /**
+     * The reflector for an item: the item's own class when the declared
+     *   item type is a supertype of it (Object for a raw List, or a
+     *   superclass for a List of a base type), so an item is written as what
+     *   it is. Otherwise the declared item reflector.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private Reflector itemReflector(T object)
+      throws ContextualException
+    {
+      Reflector declared=deco.getComponentReflector();
+      if (object==null)
+      { return declared;
+      }
+      Class<?> declaredClass=declared.getContentType();
+      Class<?> itemClass=object.getClass();
+      if (declaredClass!=null
+          && declaredClass!=itemClass
+          && declaredClass.isAssignableFrom(itemClass)
+          && !(object instanceof Node)
+         )
+      { return BeanReflector.getInstance(itemClass);
+      }
+      return declared;
+    }
+
     @Override
     public void next()
       throws ParseException,ContextualException
@@ -1087,7 +1114,7 @@ class Context
       else if (iteration.hasNext())
       {
         T object=iteration.next();
-        currentFrame=createFrame(deco.getComponentReflector(),object,null);
+        currentFrame=createFrame(itemReflector(object),object,null);
 //        index++;
       }
       else
