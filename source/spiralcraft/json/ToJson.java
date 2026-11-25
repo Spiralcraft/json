@@ -46,6 +46,7 @@ public class ToJson<Tsource>
   private boolean debug;
   private boolean addFormat=true;
   private MemberNames memberNames=MemberNames.DEFAULT;
+  private boolean asIsMode;
   private HashMap<URI,StringConverter<?>> serializerMap
     =new HashMap<>();
   { 
@@ -73,6 +74,17 @@ public class ToJson<Tsource>
   { this.addFormat=addFormat;
   }
   
+  /**
+   * Write a bean as it is, through its properties, instead of converting
+   *   it to a tuple of its data type first. A property the data type cannot
+   *   hold, such as a Node, is then written, and the types of the values
+   *   are those of the bean's reflector. Data already in tuple form is
+   *   written as before. The default is false.
+   */
+  public void setRenderAsIs(boolean renderAsIs)
+  { this.asIsMode=renderAsIs;
+  }
+
   /**
    * A converter between the identifiers of the data and the member names of
    *   the JSON, such as a CamelSnakeConverter for an API's snake_case.
@@ -176,14 +188,18 @@ public class ToJson<Tsource>
       dataTyped
         =DataComposite.class.isAssignableFrom(source.getContentType());
       
-      renderAsIs=reflector instanceof StructReflector
+      // Whether this channel writes the value as it is, not as a tuple
+      boolean asIs=asIsMode;
+
+      renderAsIs=asIs
+        || reflector instanceof StructReflector
         || ( reflector instanceof ArrayReflector
               && ((ArrayReflector) reflector)
                    .getRootComponentReflector() instanceof StructReflector
            );
       
       dataEncodable=type.isDataEncodable();
-      if (dataEncodable)
+      if (dataEncodable && !asIs)
       { reflector=DataReflector.getInstance(type);
       }
       

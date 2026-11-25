@@ -654,6 +654,83 @@
         </test:Assertion>
 
         <test:Assertion>
+          <name>ToJson renderAsIs writes a bean's Node property as its subtree
+          </name>
+          <subjectX>[@jt:ToolDto].()
+            .[*json:ToJson{ renderAsIs:=true, identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+          </subjectX>
+          <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
+{"tool_schema" :  
+  {"type" :  "object",
+    "additionalProperties" :  false,
+    "properties" :  
+    {"locationName" :  
+      {"type" :  "string"
+      }
+    }
+  }
+}]]></textLiteral>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson renderAsIs maps names out
+          </name>
+          <subjectX>[@jt:ChatDto].()
+            .[*json:ToJson{ renderAsIs:=true, identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+          </subjectX>
+          <testX><![CDATA[
+            .contains("\"max_tokens\" :  64")
+            && .contains("\"tool_call_id\" :  \"call_1\"")
+            && .contains("\"top_p\" :  0.5")
+            && .contains("\"@meta\" :  \"m\"")
+            && !.contains("maxTokens")
+            ]]>
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson without renderAsIs still converts a bean to a tuple
+          </name>
+          <subjectX>[@jt:ToolDto].()
+            .[*json:ToJson{ identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+          </subjectX>
+          <testX>!.contains("tool_schema")
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson renderAsIs leaves a struct as it was
+          </name>
+          <subjectX>{ name:="John Doe", amount:=15.432 }
+            .[*json:ToJson{ renderAsIs:=true }]
+          </subjectX>
+          <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
+{"name" :  "John Doe",
+  "amount" :  15.432
+}]]></textLiteral>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson renderAsIs leaves data in tuple form as it was
+          </name>
+          <subjectX>
+            { a:=[*jn:URI{"in/test2-foreign.json"}]
+              .[*vfsf:Resolve]
+              .[*vfsf:IO]
+              .[*json:FromJson{[@example:Customer]}]
+              .[*json:ToJson]
+            , b:=[*jn:URI{"in/test2-foreign.json"}]
+              .[*vfsf:Resolve]
+              .[*vfsf:IO]
+              .[*json:FromJson{[@example:Customer]}]
+              .[*json:ToJson{ renderAsIs:=true }]
+            }
+          </subjectX>
+          <testX>.a==.b &amp;&amp; .a.length()&gt;20
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
           <name>ToJson escapes a member name
           </name>
           <subjectX>{ toolSchema:=
