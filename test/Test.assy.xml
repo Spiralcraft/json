@@ -565,6 +565,26 @@
           </testX>
         </test:Assertion>
 
+        <test:Assertion>
+          <name>FromJson camelCase separators
+          </name>
+          <subjectX>"{\"finish_reason\":\"stop\",\"max-tokens\":\"9\"}"
+            .[*json:FromJson{ { finishReason:[@j:String], maxTokens:[@j:String] } }]
+          </subjectX>
+          <testX>.finishReason=="stop" &amp;&amp; .maxTokens=="9"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>FromJson keeps a trailing separator as written
+          </name>
+          <subjectX>"{\"name_\":\"x\"}"
+            .[*json:FromJson{ { name_:[@j:String] } }]
+          </subjectX>
+          <testX>.name_=="x"
+          </testX>
+        </test:Assertion>
+
       </scenarios>
     </task:Sequence>
   </chain>

@@ -54,6 +54,8 @@ public class DataReader
   private Frame<?> _currentFrame;
   private ParsePosition position=new ParsePosition();
   
+  // Null: no options, so names are mapped as written and an unrecognized
+  //   field is an error
   private InputOptions inputOptions;
   private boolean debug;
   
@@ -170,18 +172,27 @@ public class DataReader
   { this.position=position.clone();
   }
   
+  /**
+   * <p>The member name for a JSON name. With no InputOptions, the name is
+   *   mapped as written (inert). A camelCase separator is removed and the
+   *   character after it upper-cased; a separator at the end of the name,
+   *   with nothing after it, is kept as written.
+   * </p>
+   */
   protected String mapName(String name)
   {
     int i=-1;
-    if (inputOptions.camelCaseSeparators!=null)
+    if (inputOptions!=null && inputOptions.camelCaseSeparators!=null)
     {
       for (char sep: inputOptions.camelCaseSeparators)
       {
-        while ( (i=name.indexOf(sep)) >=0)
-        { 
+        int from=0;
+        while ( (i=name.indexOf(sep,from)) >=0 && i<name.length()-1)
+        {
           name=name.substring(0,i)
             +Character.toUpperCase(name.charAt(i+1))
             +name.substring(i+2);
+          from=i;
         }
       }
     }
@@ -640,7 +651,7 @@ public class DataReader
       }
       catch (ContextualException x)
       { 
-        if (!inputOptions.ignoreUnrecognizedFields)
+        if (inputOptions==null || !inputOptions.ignoreUnrecognizedFields)
         { throw x;
         }
         else
