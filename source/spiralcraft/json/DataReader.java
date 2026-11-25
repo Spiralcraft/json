@@ -91,6 +91,14 @@ public class DataReader
   { this.inputOptions=p;
   }
 
+  /**
+   * The mapping from JSON member names to identifiers. Null restores
+   *   MemberNames.DEFAULT.
+   */
+  public void setMemberNames(MemberNames memberNames)
+  { this.memberNames=memberNames!=null?memberNames:MemberNames.DEFAULT;
+  }
+
   void setDebug(boolean debug)
   { this.debug=debug;
   }

@@ -26,6 +26,7 @@ import spiralcraft.log.Level;
 import spiralcraft.text.ParseException;
 import spiralcraft.util.refpool.URIPool;
 import spiralcraft.util.string.DateToString;
+import spiralcraft.util.string.IdentifierConverter;
 import spiralcraft.util.string.StringConverter;
 
 public class FromJson<Ttarget,Tsource>
@@ -54,6 +55,7 @@ public class FromJson<Ttarget,Tsource>
     }
   
   private InputOptions inputOptions = new InputOptions();
+  private MemberNames memberNames=MemberNames.DEFAULT;
   
   public InputOptions getInputOptions()
   { return inputOptions;
@@ -63,6 +65,16 @@ public class FromJson<Ttarget,Tsource>
   { this.inputOptions=p;
   }
   
+  /**
+   * A converter between the identifiers of the data and the member names of
+   *   the JSON, such as a CamelSnakeConverter for an API's snake_case.
+   *   Without one, names are read as written, with the input options'
+   *   camelCase separators.
+   */
+  public void setIdentifierConverter(IdentifierConverter converter)
+  { this.memberNames=MemberNames.DEFAULT.wrap(converter);
+  }
+
   public FromJson(Class<Ttarget> clazz)
   { this(BeanReflector.<Ttarget>getInstance(clazz));
   }
@@ -227,6 +239,7 @@ public class FromJson<Ttarget,Tsource>
               );
           reader.setSerializerMap(serializerMap);
           reader.setInputOptions(inputOptions);
+          reader.setMemberNames(memberNames);
           reader.setDebug(FromJson.this.debug);
           Parser parser=new Parser(input,reader);
           parser.parse();

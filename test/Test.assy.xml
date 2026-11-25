@@ -13,6 +13,7 @@
   xmlns:json="class:/spiralcraft/json/"
   xmlns:example="class:/spiralcraft/data/test/example/"
   xmlns:langtest="class:/spiralcraft/lang/test/"
+  xmlns:jt="class:/spiralcraft/json/test/"
   xmlns="dynamic:/"
   >
   <name>spiralcraft.lang.test
@@ -582,6 +583,166 @@
             .[*json:FromJson{ { name_:[@j:String] } }]
           </subjectX>
           <testX>.name_=="x"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson identifierConverter names out
+          </name>
+          <subjectX>[@jt:ChatDto].()
+            .[*json:ToJson{ identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+          </subjectX>
+          <testX><![CDATA[
+            .contains("\"max_tokens\" :  64")
+            && .contains("\"tool_call_id\" :  \"call_1\"")
+            && .contains("\"top_p\" :  0.5")
+            && .contains("\"@meta\" :  \"m\"")
+            && !.contains("maxTokens")
+            ]]>
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson without identifierConverter writes names as they are
+          </name>
+          <subjectX>[@jt:ChatDto].().[*json:ToJson]
+          </subjectX>
+          <testX><![CDATA[
+            .contains("\"maxTokens\" :  64")
+            && .contains("\"toolCallId\"")
+            && .contains("\"@meta\"")
+            ]]>
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson writes a Node property as its subtree, names as written
+          </name>
+          <subjectX>{ toolSchema:=[@jt:ToolDto].@SCHEMA }
+            .[*json:ToJson{ identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+          </subjectX>
+          <textLiteral whitespace="true" normalizeEOL="true"><![CDATA[
+{"tool_schema" :  
+  {"type" :  "object",
+    "additionalProperties" :  false,
+    "properties" :  
+    {"locationName" :  
+      {"type" :  "string"
+      }
+    }
+  }
+}]]></textLiteral>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>A Node written twice gives the same text and is unchanged
+          </name>
+          <subjectX>
+            { a:={ toolSchema:=[@jt:ToolDto].@SCHEMA }
+                .[*json:ToJson{ identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+            , b:={ toolSchema:=[@jt:ToolDto].@SCHEMA }
+                .[*json:ToJson{ identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+            , name:=[@jt:ToolDto].@SCHEMA.name
+            , childName:=[@jt:ToolDto].@SCHEMA.children[0].name
+            }
+          </subjectX>
+          <testX><![CDATA[
+            .a==.b && .a.contains("\"additionalProperties\" :  false")
+            && .name==null && .childName==null
+            ]]>
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>ToJson escapes a member name
+          </name>
+          <subjectX>{ toolSchema:=
+              [@json:Node].@parse
+                ([@j:String]
+                  .([*jn:URI{"in/test6-escaped-name.json"}]
+                    .[*vfsf:Resolve]
+                    .[*vfsf:IO]
+                  )
+                )
+            }.[*json:ToJson]
+          </subjectX>
+          <testX><![CDATA[
+            [@json:Node].@parse(.).children[0].children[0].children[0].name.length()==5
+            && [@json:Node].@parse(.).children[0].children[0].children[0].name.startsWith("a\"b")
+            && [@json:Node].@parse(.).children[0].children[0].children[0].name.endsWith("c")
+            ]]>
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter memberNames, a bean with a Node property
+          </name>
+          <subjectX>[@jt:DirectWrite].@write([@jt:ToolDto].())
+          </subjectX>
+          <testX><![CDATA[
+            .contains("\"tool_schema\" :  {\"type\" :  \"object\"")
+            && .contains("\"locationName\" :  {\"type\" :  \"string\"}")
+            && .contains("\"additionalProperties\" :  false")
+            ]]>
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter memberNames, names out and as they are
+          </name>
+          <subjectX>
+            { out:=[@jt:DirectWrite].@write([@jt:ChatDto].())
+            , asIs:=[@jt:DirectWrite].@writeAsIs([@jt:ChatDto].())
+            }
+          </subjectX>
+          <testX><![CDATA[
+            .out.contains("\"max_tokens\" :  64") && .out.contains("\"@meta\"")
+            && .asIs.contains("\"maxTokens\" :  64") && .asIs.contains("\"@meta\"")
+            ]]>
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>DataWriter writes a Node as itself, and a scalar Node as a value
+          </name>
+          <subjectX>
+            { root:=[@jt:DirectWrite].@writeNode([@json:Node].@parse("{\"a\":[1]}"))
+            , scalars:=[@jt:DirectWrite].@writeScalars()
+            }
+          </subjectX>
+          <testX><![CDATA[
+            .root=="{\"a\" :  [1]}"
+            && .scalars=="{\"tool_schema\" :  \"s\"} {\"tool_schema\" :  12} {\"tool_schema\" :  true} {\"tool_schema\" :  null}"
+            ]]>
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>FromJson identifierConverter maps names with no camelCase separators
+          </name>
+          <subjectX>[@jt:DirectRead].@read("{\"max_tokens\":7,\"tool_call_id\":\"c9\",\"top_p\":0.25,\"@meta\":\"z\"}",true)
+          </subjectX>
+          <testX>.=="7 c9 0.25 z"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>FromJson without identifierConverter and separators does not map snake_case
+          </name>
+          <subjectX>[@jt:DirectRead].@read("{\"max_tokens\":7,\"tool_call_id\":\"c9\",\"top_p\":0.25,\"@meta\":\"z\"}",false)
+          </subjectX>
+          <testX>.=="error spiralcraft.lang.AccessException"
+          </testX>
+        </test:Assertion>
+
+        <test:Assertion>
+          <name>FromJson identifierConverter round trip
+          </name>
+          <subjectX>[@jt:ChatDto].()
+            .[*json:ToJson{ identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+            .[*json:FromJson{ [@jt:ChatDto], identifierConverter:=[@sutil:CamelSnakeConverter].@INSTANCE }]
+          </subjectX>
+          <testX>.maxTokens==64 &amp;&amp; .toolCallId=="call_1" &amp;&amp; .topP==0.5 &amp;&amp; .__at__meta=="m"
           </testX>
         </test:Assertion>
 

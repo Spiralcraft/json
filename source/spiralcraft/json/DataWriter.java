@@ -26,6 +26,7 @@ import spiralcraft.data.lang.DataReflector;
 import spiralcraft.data.lang.PrimitiveReflector;
 
 import spiralcraft.text.ParseException;
+import spiralcraft.text.ParsePosition;
 import spiralcraft.util.ArrayUtil;
 import spiralcraft.util.EmptyIterator;
 import spiralcraft.util.string.StringUtil;
@@ -69,11 +70,20 @@ public class DataWriter
   protected HashSet<URI> excludes;
   
   boolean addFormat;
+  private MemberNames memberNames=MemberNames.DEFAULT;
   
   public void setAddFormat(boolean addFormat)
   { this.addFormat=addFormat;
   }
   
+  /**
+   * The mapping from identifiers to JSON member names, carried into
+   *   each write. Null restores MemberNames.DEFAULT.
+   */
+  public void setMemberNames(MemberNames memberNames)
+  { this.memberNames=memberNames!=null?memberNames:MemberNames.DEFAULT;
+  }
+
   public void setSerializerMap(HashMap<URI,StringConverter<?>> map)
   { this.serializerMap=map;
   }
@@ -82,6 +92,20 @@ public class DataWriter
   { this.excludes=excludes;
   }
   
+  private Context newContext(Writer writer)
+  {
+    Context context=new Context(writer,addFormat,serializerMap,excludes);
+    context.setMemberNames(memberNames);
+    return context;
+  }
+
+  private Context newContext(OutputStream out)
+  {
+    Context context=new Context(out,addFormat,serializerMap,excludes);
+    context.setMemberNames(memberNames);
+    return context;
+  }
+
   public <T> void writeToURI
     (URI resourceUri
     ,Channel<T> source
@@ -116,7 +140,7 @@ public class DataWriter
     throws IOException,ContextualException
   { 
     try
-    { new Context(writer,addFormat,serializerMap,excludes).write(source);
+    { newContext(writer).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -131,7 +155,7 @@ public class DataWriter
     throws IOException,ContextualException
   { 
     try
-    { new Context(writer,addFormat,serializerMap,excludes).write(reflector,data);
+    { newContext(writer).write(reflector,data);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -145,7 +169,7 @@ public class DataWriter
     throws ContextualException
   {
     try
-    { new Context(out,addFormat,serializerMap,excludes).write(source);
+    { newContext(out).write(source);
     }
     catch (ParseException x)
     { throw new DataException("Error writing data "+x,x);
@@ -203,6 +227,10 @@ class Context
     this.writer=new JsonWriter(writer,addFormat);
   }
   
+  void setMemberNames(MemberNames memberNames)
+  { this.memberNames=memberNames;
+  }
+
   public <T> void write(Channel<T> source)
     throws ParseException,ContextualException
   {
@@ -244,6 +272,11 @@ class Context
   {
     if (data==null)
     { return new NullFrame(reflector,memberName);
+    }
+    else if (data instanceof Node)
+    {
+      // Before the Iterable branch below: a Node is Iterable (its children)
+      return new NodeFrame((Node) data,reflector,memberName);
     }
     else if (data instanceof Tuple)
     { return new TupleFrame((Tuple) data,memberName);
@@ -658,6 +691,120 @@ class Context
     }
   }
   
+  /**
+   * Writes a Node (a literal JSON subtree) as the value of a member, by
+   *   replaying the node's events into the writer. The node's top-level
+   *   value takes the frame's member name; every name inside is written as
+   *   the node has it, not mapped. The node is not changed.
+   */
+  @SuppressWarnings("rawtypes")
+  class NodeFrame
+    extends GenericFrame
+  {
+    private final Node node;
+
+    public NodeFrame(Node node,Reflector reflector,String memberName)
+    {
+      super(reflector,memberName);
+      this.node=node;
+    }
+
+    @Override
+    public void next()
+      throws ParseException
+    {
+      try
+      { node.playEvents(new RootNamer(writer,memberName));
+      }
+      catch (JsonException x)
+      {
+        if (x.getCause() instanceof ParseException)
+        { throw (ParseException) x.getCause();
+        }
+        throw x;
+      }
+      finish();
+    }
+  }
+
+  /**
+   * Passes events to a handler, giving the value at the top level the
+   *   name it is to have as a member; names below it pass as they are.
+   */
+  private static class RootNamer
+    implements ContentHandler
+  {
+    private final ContentHandler out;
+    private final String rootName;
+    private int depth;
+
+    RootNamer(ContentHandler out,String rootName)
+    {
+      this.out=out;
+      this.rootName=rootName;
+    }
+
+    private String name(String name)
+    { return depth==0?rootName:name;
+    }
+
+    @Override
+    public void setLocator(ParsePosition position)
+    { out.setLocator(position);
+    }
+
+    @Override
+    public void openObject(String name) throws ParseException
+    {
+      out.openObject(name(name));
+      depth++;
+    }
+
+    @Override
+    public void closeObject(String name) throws ParseException
+    {
+      depth--;
+      out.closeObject(name(name));
+    }
+
+    @Override
+    public void openArray(String name) throws ParseException
+    {
+      out.openArray(name(name));
+      depth++;
+    }
+
+    @Override
+    public void closeArray(String name) throws ParseException
+    {
+      depth--;
+      out.closeArray(name(name));
+    }
+
+    @Override
+    public void handleNull(String name) throws ParseException
+    { out.handleNull(name(name));
+    }
+
+    @Override
+    public void handleBoolean(String name,boolean value)
+      throws ParseException
+    { out.handleBoolean(name(name),value);
+    }
+
+    @Override
+    public void handleNumber(String name,Number value)
+      throws ParseException
+    { out.handleNumber(name(name),value);
+    }
+
+    @Override
+    public void handleString(String name,String value)
+      throws ParseException
+    { out.handleString(name(name),value);
+    }
+  }
+
   class PrimitiveFrame
     extends TypeFrame
   {

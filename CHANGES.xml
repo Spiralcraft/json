@@ -14,6 +14,7 @@
     
     <detail>
 
+
       <scm:Change>
         <revision>-dev24
         </revision>
@@ -21,6 +22,9 @@
         <notes>
           <scm:Note>Add rules for representing legal JSON as Java and 
              spiralcraft.lang identifiers
+          </scm:Note>
+          <scm:Note>Support DTOs that carry literal JSON trees to
+             emit embedded JSON into the output tree
           </scm:Note>
         </notes>
         
@@ -33,6 +37,10 @@
           <URI>DataWriter.java
           </URI>
           <URI>MemberNames.java
+          </URI>
+          <URI>FromJson.java
+          </URI>
+          <URI>ToJson.java
           </URI>
         </resources>
 

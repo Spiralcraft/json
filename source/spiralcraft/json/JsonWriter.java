@@ -240,7 +240,7 @@ public class JsonWriter
     if (name!=null)
     {
       out.write('\"');
-      out.write(name);
+      out.write(escape(name));
       out.write("\" :  ");   
     }
   }

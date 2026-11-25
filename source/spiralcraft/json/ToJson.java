@@ -30,6 +30,7 @@ import spiralcraft.lang.spi.ThreadLocalChannel;
 import spiralcraft.log.ClassLog;
 import spiralcraft.util.refpool.URIPool;
 import spiralcraft.util.string.DateToString;
+import spiralcraft.util.string.IdentifierConverter;
 import spiralcraft.util.string.StringConverter;
 
 
@@ -44,6 +45,7 @@ public class ToJson<Tsource>
   // private boolean pojoMode;
   private boolean debug;
   private boolean addFormat=true;
+  private MemberNames memberNames=MemberNames.DEFAULT;
   private HashMap<URI,StringConverter<?>> serializerMap
     =new HashMap<>();
   { 
@@ -71,6 +73,15 @@ public class ToJson<Tsource>
   { this.addFormat=addFormat;
   }
   
+  /**
+   * A converter between the identifiers of the data and the member names of
+   *   the JSON, such as a CamelSnakeConverter for an API's snake_case.
+   *   Without one, names are written as the data has them.
+   */
+  public void setIdentifierConverter(IdentifierConverter converter)
+  { this.memberNames=MemberNames.DEFAULT.wrap(converter);
+  }
+
   
   public ToJson()
   {
@@ -192,6 +203,7 @@ public class ToJson<Tsource>
         writer.setAddFormat(addFormat);
         writer.setSerializerMap(serializerMap);
         writer.setExcludes(excludes);
+        writer.setMemberNames(memberNames);
         
         Tsource val=source.get();
         if (val!=null)
